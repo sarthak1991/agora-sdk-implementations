@@ -11,6 +11,7 @@ const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 let localTracks = [];
 let remoteUsers = {};
 let UID = "";
+
 client.enableAudioVolumeIndicator();
 
 let joinAndDisplayLocalStream = async () => {
@@ -50,55 +51,12 @@ let joinAndDisplayLocalStream = async () => {
           // Remove highlight from all speakers
           $(".video-player").css("border", "");
         }
-
-        // test block start
-        {
-          if (UID == volume.uid && volume.level > 5) {
-            // $("#local-player").css({
-            //     "box-shadow": "0 2px 4px 0 #0C9DFD, 0 2px 5px 0 #0C9DFD"
-            // });
-            console.log("UID IS found with large vol");
-          } else if (UID == volume.uid && volume.level < 5) {
-            // $("#local-player").css({
-            //     "box-shadow": "none"
-            // });
-            console.log("UID has gone low vol");
-          }
-          // if (options.uid != volume.uid && volume.level > 5) {
-          //     $("#player-" + volume.uid).css({
-          //         "box-shadow": "0 2px 4px 0 #0C9DFD, 0 2px 5px 0 #0C9DFD"
-          //     });
-          // } else if (options.uid != volume.uid && volume.level < 5) {
-          //     $("#player-" + volume.uid).css({
-          //         "box-shadow": "none"
-          //     });
-          // }
-        }
-        // test block end
       });
-      // console.log("Volume indicator:", volumes);
-      // const activeSpeakerUid = volumes[0].uid;
-      // const activeSpeakerLevel = volumes[0].level;
-      // // Highlight the active speaker
-      // if (activeSpeakerLevel > 0) {
-      //   const activeSpeakerContainer = $(`#user-container-${activeSpeakerUid}`);
-      //   console.log("activeSpeakerUid", activeSpeakerUid);
-      //   console.log("activeSpeakerLevel", activeSpeakerLevel);
-      //   console.log("activeSpeakerContainer", activeSpeakerContainer);
-      //   if (activeSpeakerContainer.length > 0) {
-      //     const activeSpeaker = activeSpeakerContainer.find(".video-player");
-      //     if (activeSpeaker.length > 0) {
-      //       activeSpeaker.css("border", "thick solid red");
-      //     }
-      //   }
-      // } else {
-      //   // Remove highlight from all speakers
-      //   $(".video-player").css("border", "");
-      // }
     });
 
     let player = `<div class="video-container" id="user-container-${UID}">
-                        <div class="video-player" id="user-${UID}"></div>
+                        <div class="video-player" id="user-${UID}" style="  height: 90vh;
+                        width: 1400px;"></div>
                   </div>`;
     $("#video-streams").append(player);
 
@@ -135,7 +93,8 @@ let handleUserJoined = async (user, mediaType) => {
     }
 
     player = `<div class="video-container" id="user-container-${user.uid}">
-                        <div class="video-player" id="user-${user.uid}"></div> 
+                        <div class="video-player" id="user-${user.uid}" style="  height: 90vh;
+                        width: 1400px;"></div> 
                  </div>`;
     $("#video-streams").append(player);
 
