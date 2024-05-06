@@ -1,10 +1,68 @@
 import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
+import AgoraRTM from "agora-rtm-sdk";
 
-const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd ";
+const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
 const TOKEN =
   "007eJxTYHhzrD/onew93yTNUzYxLap3t3nNlzmjO/9v9qY9r67OW2WpwGBqbmRmnGhkaJhslGZikGiSaJxsbJRiamJsmGZgmZKc4rTOIq0hkJHh7YSFLIwMEAjiszIUF5VkZDMwAAD9gSHm";
 const CHANNEL = "srthk";
+const APP_CERTIFICATE = "6aed87b0a44b4e0d9c016a463cceab3b";
+
+const generateRTMAppId = () => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let uid = "";
+  for (let i = 0; i < 6; i++) {
+    uid += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return `USR-${uid}`;
+};
+
+const suid = generateRTMAppId();
+console.log(`suid
+'
+'
+'
+'
+'
+'
+'
+'
+'
+'
+'
+'
+`);
+console.log(suid);
+let role = "publisher"; // or'subscriber'
+let expireTime = 3600; // token expires in 1 hour
+
+// const agoraToken = await AgoraRTM.generateToken(
+//   APP_ID,
+//   APP_CERTIFICATE,
+//   suid,
+//   (role = role),
+//   (expireTime = expireTime)
+// );
+
+// const test = await AgoraRTM.generateRTMAppId();
+// console.log(`test
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// '
+// `);
+// console.log(test);
+
+// console.log(agoraToken);
 
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -26,6 +84,32 @@ let joinAndDisplayLocalStream = async () => {
       // create local tracks, using microphone and camera
       AgoraRTC.createMicrophoneAndCameraTracks(),
     ]);
+
+    // const agoraRTM_Client = await AgoraRTM.createInstance(APP_ID);
+    // await agoraRTM_Client.login({
+    //   uid: generateRTMAppId(),
+    //   token:
+    //     "007eJxTYBCfVKvvbZxhW/JwvZspV8jq9RnSs382Xl5y4HPQa6sdARsUGEzNjcyME40MDZON0kwMEk0SjZONjVJMTYwN0wwsU5JTStQt0xoCGRnYD4ezMjKwMjAyMDGA+AwMAEdhHGU=",
+    // });
+    // const agoraRTM_Channel = await agoraRTM_Client.createChannel(CHANNEL);
+    // await agoraRTM_Channel.join();
+
+    // console.log(`RTM CLIENT
+    // '
+    // '
+
+    // '
+    // '
+    // '`);
+    // console.log(agoraRTM_Client);
+    // console.log(`channel
+    // '
+    // '
+
+    // '
+    // '
+    // '`);
+    // console.log(agoraRTM_Channel);
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
@@ -64,7 +148,7 @@ let joinAndDisplayLocalStream = async () => {
     await client.publish([localTracks[0], localTracks[1]]);
   } catch (err) {
     console.log("There has been an error");
-    console.log(error);
+    console.log(err);
   }
 };
 

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "agora-rtc-sdk-ng": "4.20.0",
+    "agora-rtm-sdk": "1.5.1",
     "jquery": "^3.7.1"
   }
 }
