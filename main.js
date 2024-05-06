@@ -1,3 +1,4 @@
+import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd ";
@@ -25,37 +26,81 @@ let joinAndDisplayLocalStream = async () => {
       AgoraRTC.createMicrophoneAndCameraTracks(),
     ]);
 
-    client.on("volume-indicator", (volume) => {
-      console.log("Volume indicator:", volume);
-      const activeSpeakerUid = volume[0].uid;
-      const activeSpeakerLevel = volume[0].level;
+    client.on("volume-indicator", (volumes) => {
+      volumes.forEach((volume) => {
+        console.log(`UID ${volume.uid} Level ${volume.level}`);
+        console.log("check this out");
+        const activeSpeakerUid = volume.uid;
+        const activeSpeakerLevel = volume.level;
 
-      // Highlight the active speaker
-      if (activeSpeakerLevel > 5) {
-        const activeSpeakerContainer = document.getElementById(
-          `user-container-${activeSpeakerUid}`
-        );
-        if (activeSpeakerContainer) {
-          const activeSpeaker =
-            activeSpeakerContainer.querySelector(".video-player");
-          if (activeSpeaker) {
-            activeSpeaker.style.border = "thick solid red";
+        if (activeSpeakerLevel > 0) {
+          const activeSpeakerContainer = $(
+            `#user-container-${activeSpeakerUid}`
+          );
+          console.log("activeSpeakerUid", activeSpeakerUid);
+          console.log("activeSpeakerLevel", activeSpeakerLevel);
+          console.log("activeSpeakerContainer", activeSpeakerContainer);
+          if (activeSpeakerContainer.length > 0) {
+            const activeSpeaker = activeSpeakerContainer.find(".video-player");
+            if (activeSpeaker.length > 0) {
+              activeSpeaker.css("border", "thick solid red");
+            }
           }
+        } else {
+          // Remove highlight from all speakers
+          $(".video-player").css("border", "");
         }
-      } else {
-        // Remove highlight from all speakers
-        document.querySelectorAll(".video-player").forEach((element) => {
-          element.style.border = "";
-        });
-      }
+
+        // test block start
+        {
+          if (UID == volume.uid && volume.level > 5) {
+            // $("#local-player").css({
+            //     "box-shadow": "0 2px 4px 0 #0C9DFD, 0 2px 5px 0 #0C9DFD"
+            // });
+            console.log("UID IS found with large vol");
+          } else if (UID == volume.uid && volume.level < 5) {
+            // $("#local-player").css({
+            //     "box-shadow": "none"
+            // });
+            console.log("UID has gone low vol");
+          }
+          // if (options.uid != volume.uid && volume.level > 5) {
+          //     $("#player-" + volume.uid).css({
+          //         "box-shadow": "0 2px 4px 0 #0C9DFD, 0 2px 5px 0 #0C9DFD"
+          //     });
+          // } else if (options.uid != volume.uid && volume.level < 5) {
+          //     $("#player-" + volume.uid).css({
+          //         "box-shadow": "none"
+          //     });
+          // }
+        }
+        // test block end
+      });
+      // console.log("Volume indicator:", volumes);
+      // const activeSpeakerUid = volumes[0].uid;
+      // const activeSpeakerLevel = volumes[0].level;
+      // // Highlight the active speaker
+      // if (activeSpeakerLevel > 0) {
+      //   const activeSpeakerContainer = $(`#user-container-${activeSpeakerUid}`);
+      //   console.log("activeSpeakerUid", activeSpeakerUid);
+      //   console.log("activeSpeakerLevel", activeSpeakerLevel);
+      //   console.log("activeSpeakerContainer", activeSpeakerContainer);
+      //   if (activeSpeakerContainer.length > 0) {
+      //     const activeSpeaker = activeSpeakerContainer.find(".video-player");
+      //     if (activeSpeaker.length > 0) {
+      //       activeSpeaker.css("border", "thick solid red");
+      //     }
+      //   }
+      // } else {
+      //   // Remove highlight from all speakers
+      //   $(".video-player").css("border", "");
+      // }
     });
 
     let player = `<div class="video-container" id="user-container-${UID}">
                         <div class="video-player" id="user-${UID}"></div>
                   </div>`;
-    document
-      .getElementById("video-streams")
-      .insertAdjacentHTML("beforeend", player);
+    $("#video-streams").append(player);
 
     localTracks[1].play(`user-${UID}`);
 
@@ -71,8 +116,8 @@ let joinStream = async () => {
     console.log("Clicked join stream");
     await joinAndDisplayLocalStream();
     console.log("Have we reached here? ");
-    document.getElementById("join-btn").style.display = "none";
-    document.getElementById("stream-controls").style.display = "flex";
+    $("#join-btn").hide();
+    $("#stream-controls").show();
   } catch (error) {
     console.log("There has been an error");
     console.log(error);
@@ -84,17 +129,15 @@ let handleUserJoined = async (user, mediaType) => {
   await client.subscribe(user, mediaType);
 
   if (mediaType === "video") {
-    let player = document.getElementById(`user-container-${user.uid}`);
-    if (player != null) {
+    let player = $(`#user-container-${user.uid}`);
+    if (player.length > 0) {
       player.remove();
     }
 
     player = `<div class="video-container" id="user-container-${user.uid}">
                         <div class="video-player" id="user-${user.uid}"></div> 
                  </div>`;
-    document
-      .getElementById("video-streams")
-      .insertAdjacentHTML("beforeend", player);
+    $("#video-streams").append(player);
 
     user.videoTrack.play(`user-${user.uid}`);
   }
@@ -106,7 +149,7 @@ let handleUserJoined = async (user, mediaType) => {
 
 let handleUserLeft = async (user) => {
   delete remoteUsers[user.uid];
-  document.getElementById(`user-container-${user.uid}`).remove();
+  $(`#user-container-${user.uid}`).remove();
 };
 
 let leaveAndRemoveLocalStream = async () => {
@@ -116,60 +159,36 @@ let leaveAndRemoveLocalStream = async () => {
   }
 
   await client.leave();
-  document.getElementById("join-btn").style.display = "block";
-  document.getElementById("stream-controls").style.display = "none";
-  document.getElementById("video-streams").innerHTML = "";
+  $("#join-btn").show();
+  $("#stream-controls").hide();
+  $("#video-streams").html("");
 };
 
 let toggleMic = async (e) => {
   if (localTracks[0].muted) {
     await localTracks[0].setMuted(false);
-    e.target.innerText = "Mic on";
-    e.target.style.backgroundColor = "cadetblue";
+    $(e.target).text("Mic on");
+    $(e.target).css("background-color", "cadetblue");
   } else {
     await localTracks[0].setMuted(true);
-    e.target.innerText = "Mic off";
-    e.target.style.backgroundColor = "#EE4B2B";
+    $(e.target).text("Mic off");
+    $(e.target).css("background-color", "#EE4B2B");
   }
 };
 
 let toggleCamera = async (e) => {
   if (localTracks[1].muted) {
     await localTracks[1].setMuted(false);
-    e.target.innerText = "Camera on";
-    e.target.style.backgroundColor = "cadetblue";
+    $(e.target).text("Camera on");
+    $(e.target).css("background-color", "cadetblue");
   } else {
     await localTracks[1].setMuted(true);
-    e.target.innerText = "Camera off";
-    e.target.style.backgroundColor = "#EE4B2B";
+    $(e.target).text("Camera off");
+    $(e.target).css("background-color", "#EE4B2B");
   }
 };
 
-// let handleVolume = (volume) => {
-//   console.log(`This is the volume`);
-//   let activeSpeakerContainer = document.getElementById(
-//     `user-container-${volume.uid}`
-//   );
-//   if (activeSpeakerContainer) {
-//     let activeSpeaker = activeSpeakerContainer.querySelector(".video-player");
-//     if (activeSpeaker) {
-//       updateActiveSpeakerBorder(activeSpeaker, volume.level > 0);
-//     }
-//   }
-//   console.log(volume);
-// };
-
-// let updateActiveSpeakerBorder = (element, isActive) => {
-//   if (isActive) {
-//     element.style.border = "thick solid red";
-//   } else {
-//     element.style.border = "";
-//   }
-// };
-
-document.getElementById("join-btn").addEventListener("click", joinStream);
-document
-  .getElementById("leave-btn")
-  .addEventListener("click", leaveAndRemoveLocalStream);
-document.getElementById("mic-btn").addEventListener("click", toggleMic);
-document.getElementById("camera-btn").addEventListener("click", toggleCamera);
+$("#join-btn").on("click", joinStream);
+$("#leave-btn").on("click", leaveAndRemoveLocalStream);
+$("#mic-btn").on("click", toggleMic);
+$("#camera-btn").on("click", toggleCamera);
