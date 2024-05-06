@@ -58,7 +58,7 @@ let joinAndDisplayLocalStream = async () => {
                         <div class="video-player" id="user-${UID}" style="  height: 90vh;
                         width: 1400px;"></div>
                   </div>`;
-    $("#video-streams").append(player);
+    $("#video-call").append(player);
 
     localTracks[1].play(`user-${UID}`);
 
@@ -76,6 +76,7 @@ let joinStream = async () => {
     console.log("Have we reached here? ");
     $("#join-btn").hide();
     $("#stream-controls").show();
+    $(".stream-control-button").show();
   } catch (error) {
     console.log("There has been an error");
     console.log(error);
@@ -96,7 +97,7 @@ let handleUserJoined = async (user, mediaType) => {
                         <div class="video-player" id="user-${user.uid}" style="  height: 90vh;
                         width: 1400px;"></div> 
                  </div>`;
-    $("#video-streams").append(player);
+    $("#video-call").append(player);
 
     user.videoTrack.play(`user-${user.uid}`);
   }
@@ -120,14 +121,15 @@ let leaveAndRemoveLocalStream = async () => {
   await client.leave();
   $("#join-btn").show();
   $("#stream-controls").hide();
-  $("#video-streams").html("");
+  $(".stream-control-button").hide();
+  $("#video-call").html("");
 };
 
 let toggleMic = async (e) => {
   if (localTracks[0].muted) {
     await localTracks[0].setMuted(false);
     $(e.target).text("Mic on");
-    $(e.target).css("background-color", "cadetblue");
+    $(e.target).css("background-color", "yellowgreen");
   } else {
     await localTracks[0].setMuted(true);
     $(e.target).text("Mic off");
@@ -139,7 +141,7 @@ let toggleCamera = async (e) => {
   if (localTracks[1].muted) {
     await localTracks[1].setMuted(false);
     $(e.target).text("Camera on");
-    $(e.target).css("background-color", "cadetblue");
+    $(e.target).css("background-color", "yellowgreen");
   } else {
     await localTracks[1].setMuted(true);
     $(e.target).text("Camera off");

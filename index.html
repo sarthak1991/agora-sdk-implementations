@@ -8,21 +8,44 @@
     <link rel="stylesheet" type="text/css" media="screen" href="./style.css" />
   </head>
   <body>
-    <button id="join-btn">Join Stream</button>
+    <button id="join-btn" class="bg-slate-200 py-1 px-2 my-1">
+      Start Call
+    </button>
 
-    <div id="stream-wrapper">
-      <div id="video-streams"></div>
-      <button id="grid-layout-btn">Grid View</button>
-      <button id="active-speaker-layout-btn">Active Speaker View</button>
+    <div id="video-call-container">
+      <div id="video-call"></div>
+      <!-- placeholders for layout views -->
+      <button id="grid-layout-btn" class="bg-slate-200 py-1 px-2 my-1">
+        Grid View (default)
+      </button>
+      <button
+        id="active-speaker-layout-btn"
+        class="bg-slate-200 py-1 px-2 my-1"
+      >
+        Active Speaker View
+      </button>
 
-      <div id="stream-controls">
-        <button id="leave-btn">Leave Stream</button>
-        <button id="mic-btn">Mic On</button>
-        <button id="camera-btn">Camera on</button>
+      <div id="stream-controls hidden">
+        <button
+          id="leave-btn"
+          class="bg-slate-200 py-1 px-2 my-1 stream-control-button"
+        >
+          Leave Call
+        </button>
+        <button
+          id="mic-btn"
+          class="bg-slate-200 py-1 px-2 my-1 stream-control-button"
+        >
+          Mic On
+        </button>
+        <button
+          id="camera-btn"
+          class="bg-slate-200 py-1 px-2 my-1 stream-control-button"
+        >
+          Camera on
+        </button>
       </div>
     </div>
   </body>
-  <!-- <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script> -->
-  <!-- <script src="./AgoraRTC_N-4.20.0.js"></script> -->
   <script src="main.js" type="module"></script>
 </html>
