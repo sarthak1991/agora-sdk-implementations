@@ -143,7 +143,8 @@ let joinStream = async (role) => {
     $("#chat-container").show();
     $("#stream-controls").show();
     $("#stream-join-buttons").hide();
-    $(".layout-btn").show();
+    $(".layout-btn").css("display", "block");
+    $("#video-call-container").show();
   } catch (error) {
     console.log("There has been an error");
     console.log(error);
@@ -191,13 +192,30 @@ let leaveAndRemoveLocalStream = async () => {
   $("#stream-controls").hide();
   $("#stream-join-buttons").show();
   $(".layout-btn").hide();
+  $("#video-call-container").hide();
   $("#video-call").html("");
 };
 
 let toggleMic = async (e) => {
   if (localTracks[0].muted) {
     await localTracks[0].setMuted(false);
+    let micSvg = `<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1em"
+    height="1em"
+    viewBox="0 0 512 512"
+  >
+    <path
+      fill="currentColor"
+      d="M256 328a96.108 96.108 0 0 0 96-96V112a96 96 0 0 0-192 0v120a96.108 96.108 0 0 0 96 96m-64-216a64 64 0 0 1 128 0v120a64 64 0 0 1-128 0Z"
+    />
+    <path
+      fill="currentColor"
+      d="M400 176v56c0 79.4-64.6 144-144 144s-144-64.6-144-144v-56H80v56c0 91.653 70.424 167.154 160 175.265V496h32v-88.735c89.576-8.111 160-83.612 160-175.265v-56Z"
+    />
+  </svg>`;
     $(e.target).text("Mic on");
+    $(e.target).prepend(micSvg);
     $(e.target).css("background-color", "yellowgreen");
   } else {
     await localTracks[0].setMuted(true);
@@ -209,7 +227,20 @@ let toggleMic = async (e) => {
 let toggleCamera = async (e) => {
   if (localTracks[1].muted) {
     await localTracks[1].setMuted(false);
+    let camSvg = `<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1em"
+    height="1em"
+    viewBox="0 0 15 15"
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      d="M7 1.5H2m12.5 11v-8a1 1 0 0 0-1-1h-12a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1Zm-5-2a2 2 0 1 1 0-4a2 2 0 0 1 0 4Z"
+    />
+  </svg>`;
     $(e.target).text("Camera on");
+    $(e.target).prepend(camSvg);
     $(e.target).css("background-color", "yellowgreen");
   } else {
     await localTracks[1].setMuted(true);

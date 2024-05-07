@@ -3,7 +3,11 @@
   }
 
 .layout-btn{
+
     display: none;
+  position: absolute;
+  top: 0;
+  right: 20px;
   }
 
 .video-container {
@@ -51,4 +55,15 @@
 
 .stream-control-button{
   background: yellowgreen;
+}
+
+#video-call-container {
+  display: none;
+  width: 70vw;
+  height: auto;
+  margin: 0 auto;
+  background-color: aqua;
+  padding: 2% 5%;
+  border-radius: 25px;
+  position: relative;
 }
