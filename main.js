@@ -96,7 +96,7 @@ let joinAndDisplayLocalStream = async (uid, token) => {
         const activeSpeakerUid = volume.uid;
         const activeSpeakerLevel = volume.level;
 
-        if (activeSpeakerLevel > 0) {
+        if (activeSpeakerLevel > 10) {
           const activeSpeakerContainer = $(
             `#user-container-${activeSpeakerUid}`
           );
