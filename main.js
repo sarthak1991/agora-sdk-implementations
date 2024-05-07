@@ -143,6 +143,7 @@ let joinStream = async (role) => {
     $("#chat-container").show();
     $("#stream-controls").show();
     $("#stream-join-buttons").hide();
+    $("#stream-button-container").css("display", "none");
     $(".layout-btn").css("display", "block");
     $("#video-call-container").show();
   } catch (error) {
@@ -191,6 +192,7 @@ let leaveAndRemoveLocalStream = async () => {
   $("#chat-container").hide();
   $("#stream-controls").hide();
   $("#stream-join-buttons").show();
+  $("#stream-button-container").show();
   $(".layout-btn").hide();
   $("#video-call-container").hide();
   $("#video-call").html("");

@@ -1,3 +1,7 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
 #stream-controls{
     display: none;
   }
@@ -66,4 +70,12 @@
   padding: 2% 5%;
   border-radius: 25px;
   position: relative;
+}
+
+#stream-button-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(102,121,9,1) 26%, rgba(0,212,255,1) 100%);
 }
