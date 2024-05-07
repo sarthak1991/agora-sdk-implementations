@@ -3,12 +3,11 @@ import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
-const TOKEN =
-  "007eJxTYHhzrD/onew93yTNUzYxLap3t3nNlzmjO/9v9qY9r67OW2WpwGBqbmRmnGhkaJhslGZikGiSaJxsbJRiamJsmGZgmZKc4rTOIq0hkJHh7YSFLIwMEAjiszIUF5VkZDMwAAD9gSHm";
 const CHANNEL = "srthk";
 const APP_CERTIFICATE = "6aed87b0a44b4e0d9c016a463cceab3b";
+const TOKEN_SERVER_URL = "139.59.33.2:8080";
 
-const generateRTMAppId = () => {
+const generateUID = () => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let uid = "";
@@ -18,59 +17,79 @@ const generateRTMAppId = () => {
   return `USR-${uid}`;
 };
 
-const suid = generateRTMAppId();
-console.log(`suid
-'
-'
-'
-'
-'
-'
-'
-'
-'
-'
-'
-'
-`);
-console.log(suid);
-let role = "publisher"; // or'subscriber'
-let expireTime = 3600; // token expires in 1 hour
-
-// const agoraToken = await AgoraRTM.generateToken(
-//   APP_ID,
-//   APP_CERTIFICATE,
-//   suid,
-//   (role = role),
-//   (expireTime = expireTime)
-// );
-
-// const test = await AgoraRTM.generateRTMAppId();
-// console.log(`test
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// '
-// `);
-// console.log(test);
-
-// console.log(agoraToken);
-
-const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
 let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
+const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
+
+let generateRTCToken = async (uid) => {
+  // http://localhost:8080/rtc/channel/role/tokenType/uid
+  try {
+    let response = await fetch(
+      `http://139.59.33.2:8080/rtc/${CHANNEL}/publisher/uid/${uid}`
+    );
+    let data = await response.json();
+    let token = data.rtcToken;
+    return token;
+  } catch (error) {
+    console.log("Error in generating RTC token");
+    console.log(error);
+  }
+};
+
+let generateRTMToken = async (uid) => {
+  // http://localhost:8080/rtc/channel/role/tokenType/uid
+  try {
+    let response = await fetch(
+      `http://139.59.33.2:8080/rtm/${uid}/?expiry=600`
+    );
+    let data = await response.json();
+    let token = data.rtmToken;
+    return token;
+  } catch (error) {
+    console.log("Error in generating RTC token");
+    console.log(error);
+  }
+};
+
+const init_rtc = async (uid) => {
+  let token = await generateRTCToken(uid);
+
+  [UID, localTracks] = await Promise.all([
+    // join the channel
+    client.join(APP_ID, CHANNEL, token, uid),
+    // create local tracks, using microphone and camera
+    AgoraRTC.createMicrophoneAndCameraTracks(),
+  ]);
+  return [UID, localTracks];
+};
+
+const init_rtm = async (uid) => {
+  console.log(`Starter][][][]
+  '
+  '
+  '
+  '
+  '
+  '
+  '
+  `);
+  let rtmClient = AgoraRTM.createInstance(APP_ID);
+
+  rtmClient.on("ConnectionStateChange", (newState, reason) => {
+    console.log(
+      "RTM connection state changed to" + newState + "reason:" + reason
+    );
+  });
+
+  let token = await generateRTMToken(uid);
+  await rtmClient.login({ uid, token });
+  console.log(`rtm client login successful`);
+
+  return rtmClient;
+};
 
 let joinAndDisplayLocalStream = async () => {
   try {
@@ -78,38 +97,10 @@ let joinAndDisplayLocalStream = async () => {
 
     client.on("user-left", handleUserLeft);
 
-    [UID, localTracks] = await Promise.all([
-      // join the channel
-      client.join(APP_ID, CHANNEL, TOKEN, null),
-      // create local tracks, using microphone and camera
-      AgoraRTC.createMicrophoneAndCameraTracks(),
-    ]);
+    let uid = generateUID();
 
-    // const agoraRTM_Client = await AgoraRTM.createInstance(APP_ID);
-    // await agoraRTM_Client.login({
-    //   uid: generateRTMAppId(),
-    //   token:
-    //     "007eJxTYBCfVKvvbZxhW/JwvZspV8jq9RnSs382Xl5y4HPQa6sdARsUGEzNjcyME40MDZON0kwMEk0SjZONjVJMTYwN0wwsU5JTStQt0xoCGRnYD4ezMjKwMjAyMDGA+AwMAEdhHGU=",
-    // });
-    // const agoraRTM_Channel = await agoraRTM_Client.createChannel(CHANNEL);
-    // await agoraRTM_Channel.join();
-
-    // console.log(`RTM CLIENT
-    // '
-    // '
-
-    // '
-    // '
-    // '`);
-    // console.log(agoraRTM_Client);
-    // console.log(`channel
-    // '
-    // '
-
-    // '
-    // '
-    // '`);
-    // console.log(agoraRTM_Channel);
+    const [UID, localTracks] = await init_rtc(uid);
+    const rtmClient = await init_rtm(uid);
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
