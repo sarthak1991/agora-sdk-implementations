@@ -216,7 +216,8 @@ let leaveAndRemoveLocalStream = async () => {
   await client.leave();
   $("#join-btn").show();
   $("#stream-controls").hide();
-  $(".stream-control-button").hide();
+  $(".stream-control-button").show();
+  $("#stream-join-buttons").show();
   $("#video-call").html("");
 };
 
