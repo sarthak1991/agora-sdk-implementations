@@ -3,8 +3,15 @@
 @tailwind utilities;
 
 .stream-control-button{
-    display: none;
     background: yellowgreen;
+  }
+
+  #stream-controls{
+    display: none;
+  }
+
+.layout-btn{
+    display: none;
   }
 
   .video-container {
@@ -34,4 +41,8 @@
 
 .video-container{
   flex-basis: 25%;
+}
+
+#chat-container{
+  display: none;
 }

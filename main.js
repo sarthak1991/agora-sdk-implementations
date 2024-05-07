@@ -167,10 +167,10 @@ let joinStream = async (role) => {
     console.log("Clicked join stream");
     await joinAndDisplayLocalStream(uid, rtcToken);
     console.log("Have we reached here? ");
-    $("#join-btn").hide();
-    $("#stream-join-buttons").hide();
+    $("#chat-container").show();
     $("#stream-controls").show();
-    $(".stream-control-button").show();
+    $("#stream-join-buttons").hide();
+    $(".layout-btn").show();
   } catch (error) {
     console.log("There has been an error");
     console.log(error);
@@ -214,10 +214,10 @@ let leaveAndRemoveLocalStream = async () => {
   }
 
   await client.leave();
-  $("#join-btn").show();
+  $("#chat-container").hide();
   $("#stream-controls").hide();
-  $(".stream-control-button").show();
   $("#stream-join-buttons").show();
+  $(".layout-btn").hide();
   $("#video-call").html("");
 };
 

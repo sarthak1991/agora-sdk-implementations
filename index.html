@@ -22,17 +22,19 @@
     <div id="video-call-container">
       <div id="video-call"></div>
       <!-- placeholders for layout views -->
-      <button id="grid-layout-btn" class="bg-slate-200 py-1 px-2 my-1">
-        Grid View (default)
-      </button>
-      <button
-        id="active-speaker-layout-btn"
-        class="bg-slate-200 py-1 px-2 my-1"
-      >
-        Active Speaker View
-      </button>
+      <div class="layout-btn">
+        <button id="grid-layout-btn" class="bg-slate-200 py-1 px-2 my-1">
+          Grid View (default)
+        </button>
+        <button
+          id="active-speaker-layout-btn"
+          class="bg-slate-200 py-1 px-2 my-1"
+        >
+          Active Speaker View
+        </button>
+      </div>
 
-      <div id="stream-controls hidden">
+      <div id="stream-controls">
         <button
           id="leave-btn"
           class="bg-slate-200 py-1 px-2 my-1 stream-control-button"
