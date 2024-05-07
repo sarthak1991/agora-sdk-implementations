@@ -18,9 +18,10 @@ const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
 
 let generateRTCToken = async (uid, role) => {
+  console.log(`reached here-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-`);
   try {
     let response = await fetch(
-      `https://139.59.33.2/rtc/${CHANNEL}/${role}/uid/${uid}`
+      `https://reactdelhi.com/rtc/${CHANNEL}/${role}/uid/${uid}`
     );
     let data = await response.json();
     let token = data.rtcToken;
@@ -34,7 +35,7 @@ let generateRTCToken = async (uid, role) => {
 let generateRTMToken = async (uid) => {
   // // http://localhost:8080/rtc/channel/role/tokenType/uid
   try {
-    let response = await fetch(`https://139.59.33.2/rtm/${uid}/?expiry=600`);
+    let response = await fetch(`https://reactdelhi.com/rtm/${uid}/?expiry=600`);
     let data = await response.json();
     let token = data.rtmToken;
     return token;
