@@ -133,7 +133,7 @@ let joinAndDisplayLocalStream = async (uid, token) => {
           if (activeSpeakerContainer.length > 0) {
             const activeSpeaker = activeSpeakerContainer.find(".video-player");
             if (activeSpeaker.length > 0) {
-              activeSpeaker.css("border", "thick solid red");
+              activeSpeaker.css("border", "thick solid yellow");
             }
           }
         } else {
