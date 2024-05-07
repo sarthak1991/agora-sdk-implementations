@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.stream-control-button{
-    background: yellowgreen;
-  }
+
 
   #stream-controls{
     display: none;
@@ -45,4 +43,18 @@
 
 #chat-container{
   display: none;
+}
+
+.btn-normal{
+  background-color: #e5e7eb;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.stream-control-button{
+  background: yellowgreen;
 }
