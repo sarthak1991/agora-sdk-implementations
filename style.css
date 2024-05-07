@@ -18,3 +18,29 @@
     color: black;
     margin-top: 10px;
   }
+
+  /* .video-call {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .video-player {
+    display: inline-block; 
+    flex-basis: calc(33.33% - 10px);
+    margin: 10px;
+    flex-grow: 1;
+    height: 100%;
+    width: 100%; 
+  } */
+
+  .video-player {
+  display: inline-block;
+  height: 20vh;
+  width: 20vw;
+  object-fit: contain;
+  }
+
+.video-call{
+  display:flex
+}
