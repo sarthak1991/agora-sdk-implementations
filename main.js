@@ -28,7 +28,7 @@ let generateRTCToken = async (uid) => {
   // http://localhost:8080/rtc/channel/role/tokenType/uid
   try {
     let response = await fetch(
-      `http://139.59.33.2:8080/rtc/${CHANNEL}/publisher/uid/${uid}`
+      `https://agora-token-server-7dvb.onrender.com/rtc/${CHANNEL}/publisher/uid/${uid}`
     );
     let data = await response.json();
     let token = data.rtcToken;
@@ -43,7 +43,7 @@ let generateRTMToken = async (uid) => {
   // http://localhost:8080/rtc/channel/role/tokenType/uid
   try {
     let response = await fetch(
-      `http://139.59.33.2:8080/rtm/${uid}/?expiry=600`
+      `https://agora-token-server-7dvb.onrender.com/rtm/${uid}/?expiry=600`
     );
     let data = await response.json();
     let token = data.rtmToken;
