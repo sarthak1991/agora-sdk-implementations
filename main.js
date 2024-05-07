@@ -25,22 +25,47 @@ const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
 
 let generateRTCToken = async (uid) => {
-  // http://localhost:8080/rtc/channel/role/tokenType/uid
-  try {
-    let response = await fetch(
-      `https://139.59.33.2/rtc/${CHANNEL}/publisher/uid/${uid}`
-    );
-    let data = await response.json();
-    let token = data.rtcToken;
-    return token;
-  } catch (error) {
-    console.log("Error in generating RTC token");
-    console.log(error);
-  }
+  // console.log(`Starter][][][]
+  // '
+  // '
+  // '
+  // '
+  // '
+  // '
+  // '
+  // `);
+  // const remoteUsers = await client.remoteUsers;
+  // console.log(remoteUsers.length ? "true" : "false");
+  // console.log(`Awaited? ?
+  // '
+  // '
+  // '
+  // '
+  // '
+  // '
+  // '
+  // `);
+
+  // let role;
+  // role = "publisher";
+  // try {
+  //   let response = await fetch(
+  //     `https://139.59.33.2/rtc/${CHANNEL}/${role}/uid/${uid}`
+  //   );
+  //   let data = await response.json();
+  //   let token = data.rtcToken;
+  //   return token;
+  // } catch (error) {
+  //   console.log("Error in generating RTC token");
+  //   console.log(error);
+  // }
+
+  const token = `007eJxTYMg/1/R6R8vTMw6hn5pWbZc0vu355+oOm+rri5/t2XbBveaEAoOpuZGZcaKRoWGyUZqJQaJJonGysVGKqYmxYZqBZUpyiqOcVVpDICPDOt2PzIwMEAjiszIUF5VkZDMwAACiIiM9`;
+  return token;
 };
 
 let generateRTMToken = async (uid) => {
-  // http://localhost:8080/rtc/channel/role/tokenType/uid
+  // // http://localhost:8080/rtc/channel/role/tokenType/uid
   try {
     let response = await fetch(`https://139.59.33.2/rtm/${uid}/?expiry=600`);
     let data = await response.json();
@@ -129,26 +154,6 @@ let joinAndDisplayLocalStream = async () => {
 
     {
     }
-
-    // console.log(`Starter][][][]
-    // '
-    // '
-    // '
-    // '
-    // '
-    // '
-    // '
-    // `);
-    // console.log(rtmClient);
-    // console.log(`Starter][][][]
-    // '
-    // '
-    // '
-    // '
-    // '
-    // '
-    // '
-    // `);
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
