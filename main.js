@@ -67,15 +67,6 @@ const init_rtc = async (uid) => {
 };
 
 const init_rtm = async (uid) => {
-  console.log(`Starter][][][]
-  '
-  '
-  '
-  '
-  '
-  '
-  '
-  `);
   let rtmClient = AgoraRTM.createInstance(APP_ID);
 
   rtmClient.on("ConnectionStateChange", (newState, reason) => {
@@ -87,6 +78,42 @@ const init_rtm = async (uid) => {
   let token = await generateRTMToken(uid);
   await rtmClient.login({ uid, token });
   console.log(`rtm client login successful`);
+
+  let chatChannel = await rtmClient.createChannel(CHANNEL);
+
+  // Join the chat channel
+  await chatChannel.join();
+
+  // Listen for messages in the chat channel
+  chatChannel.on("ChannelMessage", (message, memberId) => {
+    console.log(`Received message from ${memberId}: ${message}`);
+    displayChatMessage(memberId, message);
+  });
+
+  const displayChatMessage = (memberId, message) => {
+    const chatLog = document.getElementById("chat-log");
+    const messageElement = document.createElement("div");
+    messageElement.textContent = `${memberId}: ${JSON.stringify(message.text)}`;
+    chatLog.appendChild(messageElement);
+  };
+
+  const sendChatMessage = async () => {
+    const chatInput = document.getElementById("chat-input");
+    const messageText = chatInput.value.trim();
+    if (messageText !== "") {
+      try {
+        const message = { text: messageText }; // Create a plain object with a 'text' property
+        await chatChannel.sendMessage(message);
+        chatInput.value = "";
+      } catch (error) {
+        console.log("Error sending chat message:", error);
+      }
+    }
+  };
+
+  document
+    .getElementById("send-btn")
+    .addEventListener("click", sendChatMessage);
 
   return rtmClient;
 };
@@ -101,6 +128,29 @@ let joinAndDisplayLocalStream = async () => {
 
     const [UID, localTracks] = await init_rtc(uid);
     const rtmClient = await init_rtm(uid);
+
+    {
+    }
+
+    // console.log(`Starter][][][]
+    // '
+    // '
+    // '
+    // '
+    // '
+    // '
+    // '
+    // `);
+    // console.log(rtmClient);
+    // console.log(`Starter][][][]
+    // '
+    // '
+    // '
+    // '
+    // '
+    // '
+    // '
+    // `);
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
@@ -221,6 +271,8 @@ let toggleCamera = async (e) => {
     $(e.target).css("background-color", "#EE4B2B");
   }
 };
+
+// Add an event listener to the send button
 
 $("#join-btn").on("click", joinStream);
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
