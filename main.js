@@ -1,21 +1,14 @@
 import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
+import { generateUID } from "./helpers/generateUID";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
 const CHANNEL = "srthk";
 const APP_CERTIFICATE = "6aed87b0a44b4e0d9c016a463cceab3b";
 const TOKEN_SERVER_URL = "139.59.33.2:8080";
-
-const generateUID = () => {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let uid = "";
-  for (let i = 0; i < 6; i++) {
-    uid += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return `USR-${uid}`;
-};
+const APP_TOKEN =
+  "007eJxTYMg/1/R6R8vTMw6hn5pWbZc0vu355+oOm+rri5/t2XbBveaEAoOpuZGZcaKRoWGyUZqJQaJJonGysVGKqYmxYZqBZUpyiqOcVVpDICPDOt2PzIwMEAjiszIUF5VkZDMwAACiIiM9";
 
 let localTracks = [];
 let remoteUsers = {};
@@ -24,44 +17,18 @@ let UID = "";
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
 
-let generateRTCToken = async (uid) => {
-  // console.log(`Starter][][][]
-  // '
-  // '
-  // '
-  // '
-  // '
-  // '
-  // '
-  // `);
-  // const remoteUsers = await client.remoteUsers;
-  // console.log(remoteUsers.length ? "true" : "false");
-  // console.log(`Awaited? ?
-  // '
-  // '
-  // '
-  // '
-  // '
-  // '
-  // '
-  // `);
-
-  // let role;
-  // role = "publisher";
-  // try {
-  //   let response = await fetch(
-  //     `https://139.59.33.2/rtc/${CHANNEL}/${role}/uid/${uid}`
-  //   );
-  //   let data = await response.json();
-  //   let token = data.rtcToken;
-  //   return token;
-  // } catch (error) {
-  //   console.log("Error in generating RTC token");
-  //   console.log(error);
-  // }
-
-  const token = `007eJxTYMg/1/R6R8vTMw6hn5pWbZc0vu355+oOm+rri5/t2XbBveaEAoOpuZGZcaKRoWGyUZqJQaJJonGysVGKqYmxYZqBZUpyiqOcVVpDICPDOt2PzIwMEAjiszIUF5VkZDMwAACiIiM9`;
-  return token;
+let generateRTCToken = async (uid, role) => {
+  try {
+    let response = await fetch(
+      `https://139.59.33.2/rtc/${CHANNEL}/${role}/uid/${uid}`
+    );
+    let data = await response.json();
+    let token = data.rtcToken;
+    return token;
+  } catch (error) {
+    console.log("Error in generating RTC token");
+    console.log(error);
+  }
 };
 
 let generateRTMToken = async (uid) => {
@@ -77,9 +44,7 @@ let generateRTMToken = async (uid) => {
   }
 };
 
-const init_rtc = async (uid) => {
-  let token = await generateRTCToken(uid);
-
+const init_rtc = async (uid, token) => {
   [UID, localTracks] = await Promise.all([
     // join the channel
     client.join(APP_ID, CHANNEL, token, uid),
@@ -141,19 +106,14 @@ const init_rtm = async (uid) => {
   return rtmClient;
 };
 
-let joinAndDisplayLocalStream = async () => {
+let joinAndDisplayLocalStream = async (uid, token) => {
   try {
     client.on("user-published", handleUserJoined);
 
     client.on("user-left", handleUserLeft);
 
-    let uid = generateUID();
-
-    const [UID, localTracks] = await init_rtc(uid);
-    const rtmClient = await init_rtm(uid);
-
-    {
-    }
+    const [UID, localTracks] = await init_rtc(uid, token);
+    await init_rtm(uid);
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
@@ -198,10 +158,13 @@ let joinAndDisplayLocalStream = async () => {
   }
 };
 
-let joinStream = async () => {
+let joinStream = async (role) => {
   try {
+    let uid = generateUID();
+    let rtcToken = await generateRTCToken(uid, role);
+
     console.log("Clicked join stream");
-    await joinAndDisplayLocalStream();
+    await joinAndDisplayLocalStream(uid, rtcToken);
     console.log("Have we reached here? ");
     $("#join-btn").hide();
     $("#stream-controls").show();
@@ -285,3 +248,11 @@ $("#join-btn").on("click", joinStream);
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
+
+$("#join-as-host-btn").on("click", async () => {
+  await joinStream("publisher");
+});
+
+$("#join-as-audience-btn").on("click", async () => {
+  await joinStream("audience");
+});
