@@ -1,12 +1,13 @@
 import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
-import { generateUID } from "./helpers/generateUID";
+
+import generate from "./helpers/generators";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
 const CHANNEL = "srthk";
 const APP_CERTIFICATE = "6aed87b0a44b4e0d9c016a463cceab3b";
-const TOKEN_SERVER_URL = "139.59.33.2:8080";
+
 const APP_TOKEN =
   "007eJxTYMg/1/R6R8vTMw6hn5pWbZc0vu355+oOm+rri5/t2XbBveaEAoOpuZGZcaKRoWGyUZqJQaJJonGysVGKqYmxYZqBZUpyiqOcVVpDICPDOt2PzIwMEAjiszIUF5VkZDMwAACiIiM9";
 
@@ -16,34 +17,6 @@ let UID = "";
 
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
-
-let generateRTCToken = async (uid, role) => {
-  console.log(`reached here-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-`);
-  try {
-    let response = await fetch(
-      `https://reactdelhi.com/rtc/${CHANNEL}/${role}/uid/${uid}`
-    );
-    let data = await response.json();
-    let token = data.rtcToken;
-    return token;
-  } catch (error) {
-    console.log("Error in generating RTC token");
-    console.log(error);
-  }
-};
-
-let generateRTMToken = async (uid) => {
-  // // http://localhost:8080/rtc/channel/role/tokenType/uid
-  try {
-    let response = await fetch(`https://reactdelhi.com/rtm/${uid}/?expiry=600`);
-    let data = await response.json();
-    let token = data.rtmToken;
-    return token;
-  } catch (error) {
-    console.log("Error in generating RTM token");
-    console.log(error);
-  }
-};
 
 const init_rtc = async (uid, token) => {
   [UID, localTracks] = await Promise.all([
@@ -64,7 +37,7 @@ const init_rtm = async (uid) => {
     );
   });
 
-  let token = await generateRTMToken(uid);
+  let token = await generate.rtmToken(uid);
   await rtmClient.login({ uid, token });
   console.log(`rtm client login successful`);
 
@@ -161,8 +134,8 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
 let joinStream = async (role) => {
   try {
-    let uid = generateUID();
-    let rtcToken = await generateRTCToken(uid, role);
+    let uid = generate.uid();
+    let rtcToken = await generate.rtcToken(CHANNEL, uid, role);
 
     console.log("Clicked join stream");
     await joinAndDisplayLocalStream(uid, rtcToken);
@@ -247,7 +220,6 @@ let toggleCamera = async (e) => {
 
 // Add an event listener to the send button
 
-$("#join-btn").on("click", joinStream);
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
