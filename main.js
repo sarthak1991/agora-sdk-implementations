@@ -49,7 +49,7 @@ let generateRTMToken = async (uid) => {
     let token = data.rtmToken;
     return token;
   } catch (error) {
-    console.log("Error in generating RTC token");
+    console.log("Error in generating RTM token");
     console.log(error);
   }
 };
