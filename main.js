@@ -218,6 +218,13 @@ let toggleCamera = async (e) => {
   }
 };
 
+let setGridLayout = () => {
+  console.log("SetGridLayout");
+};
+let setActiveSpeakerLayout = () => {
+  console.log("SetActiveSpeakerLayout");
+};
+
 // Add an event listener to the send button
 
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
@@ -231,3 +238,6 @@ $("#join-as-host-btn").on("click", async () => {
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
 });
+
+$("#grid-layout-btn").on("click", setGridLayout);
+$("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
