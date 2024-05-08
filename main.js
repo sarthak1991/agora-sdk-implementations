@@ -1,3 +1,4 @@
+// GOTO: Bottom of the paage to see Step 1 and start reading the code.
 // Used Jquery to make writing code quicker and more readable
 import $ from "jquery";
 
