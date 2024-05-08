@@ -150,7 +150,6 @@ let joinAndDisplayLocalStream = async (uid, token) => {
                         <div class="uid-label">${UID}</div>
                   </div>`;
     $("#video-call").append(player);
-    document.title = `${UID}`;
 
     localTracks[1].play(`user-${UID}`);
 
@@ -204,7 +203,6 @@ let handleUserJoined = async (user, mediaType) => {
                         <div class="uid-label">${user.uid}</div> 
                  </div>`;
     $("#video-call").append(player);
-    document.title = `${user.uid}`;
 
     user.videoTrack.play(`user-${user.uid}`);
   }
