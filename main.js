@@ -1,22 +1,35 @@
+// Used Jquery to make writing code quicker and more readable
 import $ from "jquery";
+
+// Importing Agora SDKs
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 
+// Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
+
+// Later: It wasn't in the requirements but allow user to enter his channel of choice as we are using cutom tokens using our own token generator serviced by our own HTTPS Enabled NodeJS Server.
 const CHANNEL = "srthk";
-const APP_CERTIFICATE = "6aed87b0a44b4e0d9c016a463cceab3b";
 
-const APP_TOKEN =
-  "007eJxTYMg/1/R6R8vTMw6hn5pWbZc0vu355+oOm+rri5/t2XbBveaEAoOpuZGZcaKRoWGyUZqJQaJJonGysVGKqYmxYZqBZUpyiqOcVVpDICPDOt2PzIwMEAjiszIUF5VkZDMwAACiIiM9";
-
+// placeholder variables
 let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
+/**
+ * - Create RTC Client
+ * - Enable Volume Indicators from the client (Used in checking for active speaker)
+ */
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 client.enableAudioVolumeIndicator();
+
+/**
+ * Step 3.1:
+ * - Connect the client to the call
+ * - Create Audio and Video tracks
+ */
 
 const init_rtc = async (uid, token) => {
   [UID, localTracks] = await Promise.all([
@@ -28,6 +41,14 @@ const init_rtc = async (uid, token) => {
   return [UID, localTracks];
 };
 
+/**
+ * Step 3.2:
+ * Initialize the signaling SDK
+ * - Login to sdk
+ * - Create chat channel
+ * - Join chat channel
+ * - Handle user cases
+ */
 const init_rtm = async (uid) => {
   let rtmClient = AgoraRTM.createInstance(APP_ID);
 
@@ -79,7 +100,15 @@ const init_rtm = async (uid) => {
 
   return rtmClient;
 };
-
+/**
+ *
+ * Step 3:
+ * - Write logic for when a user joins video call.
+ * - Handle user published and user left cases
+ * - initialize RTC and RTM SDKs and handle user events for both
+ * - Check if the user volume level is above 10. If it is, highlight the user with a yellow border.
+ * - Next Steps: --> Check Step 3.1 (init_rtc) and Step 3.2 (init_rtm)
+ */
 let joinAndDisplayLocalStream = async (uid, token) => {
   try {
     client.on("user-published", handleUserJoined);
@@ -131,9 +160,17 @@ let joinAndDisplayLocalStream = async (uid, token) => {
     console.log(err);
   }
 };
-
+/**
+ *
+ * Step 2:
+ * - Join Stream.
+ * - Handle hiding and showing HTML elements and buttons as appropriate
+ * - Next Step -> joinAndDisplayLocalStream
+ *
+ */
 let joinStream = async (role) => {
   try {
+    // generate UID and RTC token using custom logic written in ./helpers.generators.js | Split the logic into a different file to keep this file lean
     let uid = generate.uid();
     let rtcToken = await generate.rtcToken(CHANNEL, uid, role);
 
@@ -251,6 +288,7 @@ let toggleCamera = async (e) => {
   }
 };
 
+// Placeholder functions for layout views
 let setGridLayout = () => {
   console.log("SetGridLayout");
 };
@@ -258,12 +296,21 @@ let setActiveSpeakerLayout = () => {
   console.log("SetActiveSpeakerLayout");
 };
 
-// Add an event listener to the send button
-
+// User Event Handlers
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
 
+// Event handlers for layout views
+$("#grid-layout-btn").on("click", setGridLayout);
+$("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
+
+/**
+ * Step 1:
+ * - Assign the user the role of host or audience based on what the user clicked.
+ * - Join the user to the stream
+ * - Next Step --> joinStream()
+ */
 $("#join-as-host-btn").on("click", async () => {
   await joinStream("publisher");
 });
@@ -271,6 +318,3 @@ $("#join-as-host-btn").on("click", async () => {
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
 });
-
-$("#grid-layout-btn").on("click", setGridLayout);
-$("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
