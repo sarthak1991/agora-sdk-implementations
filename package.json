@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -17,7 +18,6 @@
   "dependencies": {
     "agora-rtc-sdk-ng": "4.20.0",
     "agora-rtm-sdk": "1.5.1",
-    "jquery": "^3.7.1",
-    "letsencrypt-express": "^2.0.7"
+    "jquery": "^3.7.1"
   }
 }
