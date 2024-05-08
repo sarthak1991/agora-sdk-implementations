@@ -1,3 +1,4 @@
+// This is my own custom node backend hosting the Agora Token Service. It is secured with SSL (https)
 const TOKEN_SERVER_URL = "https://reactdelhi.com";
 
 const generateUID = () => {
@@ -10,6 +11,7 @@ const generateUID = () => {
   return `USR-${uid}`;
 };
 
+// Generate RTC Token
 const generateRTCToken = async (CHANNEL, uid, role) => {
   console.log(`reached here-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-`);
   try {
@@ -25,6 +27,7 @@ const generateRTCToken = async (CHANNEL, uid, role) => {
   }
 };
 
+//Generate RTM Token
 const generateRTMToken = async (uid) => {
   try {
     let response = await fetch(`${TOKEN_SERVER_URL}/rtm/${uid}/?expiry=600`);
@@ -37,6 +40,7 @@ const generateRTMToken = async (uid) => {
   }
 };
 
+// Exporting all the generator functions inside a single variable called generate. Enhances the readability!
 const generate = {
   uid: generateUID,
   rtcToken: generateRTCToken,
