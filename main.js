@@ -6,10 +6,16 @@ import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 
+import { AIDenoiserExtension } from "agora-extension-ai-denoiser";
+import VirtualBackgroundExtension from "agora-extension-virtual-background";
+
+
+
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
 
 const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
+// eac91002da8b4caabfdde1753ad8dd90
 
 // Later: It wasn't in the requirements but allow user to enter his channel of choice as we are using cutom tokens using our own token generator serviced by our own HTTPS Enabled NodeJS Server.
 const CHANNEL = "srthk";
@@ -19,11 +25,16 @@ let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
-/**
+/** 
+ * Step 0
  * - Create RTC Client
  * - Enable Volume Indicators from the client (Used in checking for active speaker)
  */
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+AgoraRTC.setArea("ASIA");
+
+
 client.enableAudioVolumeIndicator();
 
 /**
@@ -116,23 +127,95 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     client.on("user-left", handleUserLeft);
 
+
+
     const [UID, localTracks] = await init_rtc(uid, token);
+    console.log(`This is the local tracks-=-=-=-=-`);
+    console.log(localTracks);
+    console.log(`This is the local tracks-=-=-=-=-`);
     await init_rtm(uid);
+
+    // TEST-=-=-=-=-=-=-=-=-=-DENOISER START-=-=-=-=-=-=-=-=-=-=-=-=-
+
+    console.log(`TEST-=-=-=-=-=-=-=-=-=-DENOISER-=-=-=-=-=-=-=-=-=-=-=-=-`);
+
+    const denoiser = new AIDenoiserExtension({ assetsPath: './node_modules/agora-extension-ai-denoiser/external' });
+
+
+
+    // Register the extension
+    AgoraRTC.registerExtensions([denoiser]);
+    // (Optional) Listen for the callback reporting that the Wasm files fail to load
+
+
+    // Create a processor
+const denoiserProcessor = denoiser.createProcessor({
+  wasmValidation: false,
+});
+// Enable the extension by default
+denoiserProcessor.enable();
+
+localTracks[0].pipe(denoiserProcessor).pipe(localTracks[0].processorDestination);
+await denoiserProcessor.enable();
+
+    // TEST-=-=-=-=-=-=-=-=-=-DENOISER END -=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+
+
+    // VIDEO BLUR START -----------================-------------=============---------==========---------========------=====
+
+
+    let cloudToken = generate.authenticateCloud()
+
+    // console.log(`CLOUD TOKEN START-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+
+    // console.log(cloudToken);
+    // console.log(`CLOUD TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+
+    const extension = new VirtualBackgroundExtension();
+if (!extension.checkCompatibility()) {
+  // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
+  console.error("Does not support Virtual Background!");
+}
+// Register plugin
+AgoraRTC.registerExtensions([extension]);
+
+const processor = extension.createProcessor();
+
+
+await processor.init();
+
+// localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
+localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
+
+
+// processor.setOptions({type: 'blur', blurDegree: 2});
+processor.setOptions({type: 'color', color: '#00ff00'});
+
+
+await processor.enable();
+
+
+
+    // VIDEO BLUR END -----------================-------------=============---------==========---------========------=====
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
-        console.log(`UID ${volume.uid} Level ${volume.level}`);
-        console.log("check this out");
+        // console.log(`UID ${volume.uid} Level ${volume.level}`);
+        // console.log("check this out");
         const activeSpeakerUid = volume.uid;
+
+        console.log(`uid --> ${volume.uid}`);
         const activeSpeakerLevel = volume.level;
 
         if (activeSpeakerLevel > 10) {
           const activeSpeakerContainer = $(
             `#user-container-${activeSpeakerUid}`
           );
-          console.log("activeSpeakerUid", activeSpeakerUid);
-          console.log("activeSpeakerLevel", activeSpeakerLevel);
-          console.log("activeSpeakerContainer", activeSpeakerContainer);
+          // console.log("activeSpeakerUid", activeSpeakerUid);
+          // console.log("activeSpeakerLevel", activeSpeakerLevel);
+          // console.log("activeSpeakerContainer", activeSpeakerContainer);
           if (activeSpeakerContainer.length > 0) {
             const activeSpeaker = activeSpeakerContainer.find(".video-player");
             if (activeSpeaker.length > 0) {
@@ -174,8 +257,16 @@ let joinStream = async (role) => {
     let uid = generate.uid();
     let rtcToken = await generate.rtcToken(CHANNEL, uid, role);
 
+    console.log(`RTC TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+    console.log(rtcToken);
+    console.log("UID");
+    console.log(uid);
+    console.log(`RTC TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+
     console.log("Clicked join stream");
+
     await joinAndDisplayLocalStream(uid, rtcToken);
+
     console.log("Have we reached here? ");
     $("#chat-container").show();
     $("#stream-controls").show();
@@ -316,4 +407,5 @@ $("#join-as-host-btn").on("click", async () => {
 
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
+
 });

@@ -8,12 +8,13 @@ const generateUID = () => {
   for (let i = 0; i < 6; i++) {
     uid += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-  return `USR-${uid}`;
+  // return `USR-${uid}`;
+  return `527841`
 };
 
 // Generate RTC Token
 const generateRTCToken = async (CHANNEL, uid, role) => {
-  console.log(`reached here-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-`);
+  console.log(`Inside Generate RTC Token`);
   try {
     let response = await fetch(
       `${TOKEN_SERVER_URL}/rtc/${CHANNEL}/${role}/uid/${uid}`
@@ -40,11 +41,36 @@ const generateRTMToken = async (uid) => {
   }
 };
 
+const generateAuthorizationCredentialForCloudRecording = () => {
+  
+
+  // DO NOT COMMIT THIS
+  // Customer ID
+  const customerKey = "229676859a9f412fb3af3731ce6a49f2"
+  
+  // Customer secret
+  const customerSecret = "8b9cf7b5e572415ebdb9cb44c27ae8df"
+  
+  // Concatenate customer key and customer secret and use base64 to encode the concatenated string
+  const plainCredential = customerKey + ":" + customerSecret
+
+  console.log(`Plain credential ==> ${plainCredential}`);
+  console.log(plainCredential);
+  
+  // Encode with base64
+  const encodedCredential = btoa(plainCredential).toString('base64')
+  const authorizationField = "Basic " + encodedCredential
+
+  return authorizationField;
+
+}
+
 // Exporting all the generator functions inside a single variable called generate. Enhances the readability!
 const generate = {
   uid: generateUID,
   rtcToken: generateRTCToken,
   rtmToken: generateRTMToken,
+  authenticateCloud: generateAuthorizationCredentialForCloudRecording
 };
 
 export default generate;
