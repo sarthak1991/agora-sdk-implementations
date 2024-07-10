@@ -5,3 +5,5 @@ dist/
 yarn.lock
 
 test.js
+
+helpers/CONSTS.js

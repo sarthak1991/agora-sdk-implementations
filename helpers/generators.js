@@ -1,4 +1,8 @@
+import CONSTANTS from "./CONSTS";
+
+
 // This is my own custom node backend hosting the Agora Token Service. It is secured with SSL (https)
+
 const TOKEN_SERVER_URL = "https://reactdelhi.com";
 
 const generateUID = () => {
@@ -11,6 +15,15 @@ const generateUID = () => {
   return `USR-${uid}`;
   // return `527841`
 };
+
+
+const generateRecordingUID = () => {
+
+  const randomNineDigitNumber = (Math.floor(Math.random() * 1000000000)).toString();
+
+  return randomNineDigitNumber;
+};
+
 
 // Generate RTC Token
 const generateRTCToken = async (CHANNEL, uid, role) => {
@@ -70,7 +83,8 @@ const generate = {
   uid: generateUID,
   rtcToken: generateRTCToken,
   rtmToken: generateRTMToken,
-  authenticateCloud: generateAuthorizationCredentialForCloudRecording
+  authenticateCloud: generateAuthorizationCredentialForCloudRecording,
+  recordingUID: generateRecordingUID
 };
 
 export default generate;

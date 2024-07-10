@@ -9,23 +9,24 @@ import AgoraRTM from "agora-rtm-sdk";
 import { AIDenoiserExtension } from "agora-extension-ai-denoiser";
 import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
-
-
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
+import recording from "./helpers/recordingControls";
+import CONSTANTS from "./helpers/CONSTS";
 
-const APP_ID = "57263a211c2f40a4a3c32d5431f09dcd";
 // eac91002da8b4caabfdde1753ad8dd90
 
 // Later: It wasn't in the requirements but allow user to enter his channel of choice as we are using cutom tokens using our own token generator serviced by our own HTTPS Enabled NodeJS Server.
-const CHANNEL = "srthk";
+const CHANNEL = CONSTANTS.CHANNEL;
 
 // placeholder variables
 let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
-/** 
+let intervalContinue = true;
+
+/**
  * Step 0
  * - Create RTC Client
  * - Enable Volume Indicators from the client (Used in checking for active speaker)
@@ -33,12 +34,8 @@ let UID = "";
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 // const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
-
-
-
 // Example of geo-restricting the app.
 AgoraRTC.setArea("ASIA");
-
 
 client.enableAudioVolumeIndicator();
 
@@ -51,7 +48,7 @@ client.enableAudioVolumeIndicator();
 const init_rtc = async (uid, token) => {
   [UID, localTracks] = await Promise.all([
     // join the channel
-    client.join(APP_ID, CHANNEL, token, uid),
+    client.join(CONSTANTS.APPID, CONSTANTS.CHANNEL, token, uid),
     // create local tracks, using microphone and camera
     AgoraRTC.createMicrophoneAndCameraTracks(),
   ]);
@@ -67,7 +64,7 @@ const init_rtc = async (uid, token) => {
  * - Handle user cases
  */
 const init_rtm = async (uid) => {
-  let rtmClient = AgoraRTM.createInstance(APP_ID);
+  let rtmClient = AgoraRTM.createInstance(CONSTANTS.APPID);
 
   rtmClient.on("ConnectionStateChange", (newState, reason) => {
     console.log(
@@ -79,7 +76,7 @@ const init_rtm = async (uid) => {
   await rtmClient.login({ uid, token });
   console.log(`rtm client login successful`);
 
-  let chatChannel = await rtmClient.createChannel(CHANNEL);
+  let chatChannel = await rtmClient.createChannel(CONSTANTS.CHANNEL);
 
   // Join the chat channel
   await chatChannel.join();
@@ -132,8 +129,6 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     client.on("user-left", handleUserLeft);
 
-
-
     const [UID, localTracks] = await init_rtc(uid, token);
     console.log(`This is the local tracks-=-=-=-=-`);
     console.log(localTracks);
@@ -144,34 +139,31 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     console.log(`TEST-=-=-=-=-=-=-=-=-=-DENOISER-=-=-=-=-=-=-=-=-=-=-=-=-`);
 
-    const denoiser = new AIDenoiserExtension({ assetsPath: './node_modules/agora-extension-ai-denoiser/external' });
-
-
+    const denoiser = new AIDenoiserExtension({
+      assetsPath: "./node_modules/agora-extension-ai-denoiser/external",
+    });
 
     // Register the extension
     AgoraRTC.registerExtensions([denoiser]);
     // (Optional) Listen for the callback reporting that the Wasm files fail to load
 
-
     // Create a processor
-const denoiserProcessor = denoiser.createProcessor({
-  wasmValidation: false,
-});
-// Enable the extension by default
-denoiserProcessor.enable();
+    const denoiserProcessor = denoiser.createProcessor({
+      wasmValidation: false,
+    });
+    // Enable the extension by default
+    denoiserProcessor.enable();
 
-localTracks[0].pipe(denoiserProcessor).pipe(localTracks[0].processorDestination);
-await denoiserProcessor.enable();
+    localTracks[0]
+      .pipe(denoiserProcessor)
+      .pipe(localTracks[0].processorDestination);
+    await denoiserProcessor.enable();
 
     // TEST-=-=-=-=-=-=-=-=-=-DENOISER END -=-=-=-=-=-=-=-=-=-=-=-=-
 
-
-
-
     // VIDEO BLUR START -----------================-------------=============---------==========---------========------=====
 
-
-    let cloudToken = generate.authenticateCloud()
+    let cloudToken = generate.authenticateCloud();
 
     // console.log(`CLOUD TOKEN START-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
 
@@ -179,29 +171,24 @@ await denoiserProcessor.enable();
     // console.log(`CLOUD TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
 
     const extension = new VirtualBackgroundExtension();
-if (!extension.checkCompatibility()) {
-  // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
-  console.error("Does not support Virtual Background!");
-}
-// Register plugin
-AgoraRTC.registerExtensions([extension]);
+    if (!extension.checkCompatibility()) {
+      // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
+      console.error("Does not support Virtual Background!");
+    }
+    // Register plugin
+    AgoraRTC.registerExtensions([extension]);
 
-const processor = extension.createProcessor();
+    const processor = extension.createProcessor();
 
+    await processor.init();
 
-await processor.init();
+    // localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
+    localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
 
-// localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
-localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
+    // processor.setOptions({type: 'blur', blurDegree: 2});
+    processor.setOptions({ type: "color", color: "#00ff00" });
 
-
-// processor.setOptions({type: 'blur', blurDegree: 2});
-processor.setOptions({type: 'color', color: '#00ff00'});
-
-
-await processor.enable();
-
-
+    await processor.enable();
 
     // VIDEO BLUR END -----------================-------------=============---------==========---------========------=====
 
@@ -260,13 +247,10 @@ let joinStream = async (role) => {
   try {
     // generate UID and RTC token using custom logic written in ./helpers.generators.js | Split the logic into a different file to keep this file lean
     let uid = generate.uid();
-    let rtcToken = await generate.rtcToken(CHANNEL, uid, role);
+    let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
-    console.log(`RTC TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
-    console.log(rtcToken);
-    console.log("UID");
-    console.log(uid);
-    console.log(`RTC TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+    console.log(`rtcToken --> `, rtcToken);
+    console.log("UID", UID);
 
     console.log("Clicked join stream");
 
@@ -383,6 +367,84 @@ let toggleCamera = async (e) => {
   }
 };
 
+const signalAcquisition = async (e) => {
+  // hide screen recording button
+
+  $("#record-btn").hide();
+
+  const recordingUID = generate.recordingUID();
+
+  const recordingClientToken = await generate.rtcToken(
+    CONSTANTS.CHANNEL,
+    recordingUID,
+    "audience"
+  );
+
+  let data = await recording.acquire(
+    CONSTANTS.APPID,
+    CONSTANTS.CHANNEL,
+    recordingUID
+  );
+
+  console.log("statusOfAcquisition ==> ", data);
+
+  data
+    ? $(e.target).text("✅ Signal Acquired") &&
+      $(e.target).css("background-color", "#75d470") &&
+      $(e.target).prop("disabled", true) &&
+      $("#start-record-btn").show()
+    : // $("#record-btn").click()
+      // (toggleRecordingText())
+      $(e.target).text("❌ Signal failed");
+
+  let mode = "web";
+
+  // recording.web(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken, mode)
+};
+
+const startScreenRecording = async (e) => {
+  console.log("Starting to record");
+
+  $(e.target).prop("disabled", true);
+  $(`#stop-record-btn`).show();
+
+  toggleRecordingText();
+};
+
+const stopScreenRecording = async (e) => {
+  console.log("stopping to record");
+
+  intervalContinue = false;
+  toggleRecordingText();
+  $(`#acquire-btn`).prop("disabled", false);
+  $(`#acquire-btn`).text("Acquire Signal");
+};
+
+
+
+const updateTextInterval = () => {
+  count++;
+  $("#acquire-btn").text(wordsArray[count % wordsArray.length]);
+};
+
+const toggleRecordingText = () => {
+  console.log("Interval continue => ", intervalContinue);
+  let count = 0;
+  let wordsArray = [
+    "✅ Recording.",
+    "✅ Recording..",
+    "✅ Recording...",
+    "✅ Recording....",
+  ];
+  if (intervalContinue) {
+    const stopThisInterval = setInterval(updateTextInterval, 500);
+  } else {
+    clearInterval(stopThisInterval);
+  }
+};
+
+
+
 // Placeholder functions for layout views
 let setGridLayout = () => {
   console.log("SetGridLayout");
@@ -395,6 +457,9 @@ let setActiveSpeakerLayout = () => {
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
+$("#acquire-btn").on("click", signalAcquisition);
+$("#start-record-btn").on("click", startScreenRecording);
+$("#stop-record-btn").on("click", stopScreenRecording);
 
 // Event handlers for layout views
 $("#grid-layout-btn").on("click", setGridLayout);
@@ -412,5 +477,4 @@ $("#join-as-host-btn").on("click", async () => {
 
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
-
 });
