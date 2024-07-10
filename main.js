@@ -31,7 +31,12 @@ let UID = "";
  * - Enable Volume Indicators from the client (Used in checking for active speaker)
  */
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+// const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
+
+
+
+// Example of geo-restricting the app.
 AgoraRTC.setArea("ASIA");
 
 

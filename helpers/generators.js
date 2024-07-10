@@ -8,8 +8,8 @@ const generateUID = () => {
   for (let i = 0; i < 6; i++) {
     uid += characters.charAt(Math.floor(Math.random() * characters.length));
   }
-  // return `USR-${uid}`;
-  return `527841`
+  return `USR-${uid}`;
+  // return `527841`
 };
 
 // Generate RTC Token
