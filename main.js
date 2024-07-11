@@ -24,7 +24,9 @@ let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
-let intervalContinue = true;
+let dataFromAcquire = {}
+let dataFromStartRecording = {}
+let dataFromStopRecording = {}
 
 /**
  * Step 0
@@ -374,11 +376,7 @@ const signalAcquisition = async (e) => {
 
   const recordingUID = generate.recordingUID();
 
-  const recordingClientToken = await generate.rtcToken(
-    CONSTANTS.CHANNEL,
-    recordingUID,
-    "audience"
-  );
+
 
   let data = await recording.acquire(
     CONSTANTS.APPID,
@@ -386,11 +384,11 @@ const signalAcquisition = async (e) => {
     recordingUID
   );
 
-  console.log("statusOfAcquisition ==> ", data);
+  
 
   data
     ? $(e.target).text("✅ Signal Acquired") &&
-      $(e.target).css("background-color", "#75d470") &&
+      // $(e.target).css("background-color", "#75d470") &&
       $(e.target).prop("disabled", true) &&
       $("#start-record-btn").show()
     : // $("#record-btn").click()
@@ -399,48 +397,63 @@ const signalAcquisition = async (e) => {
 
   let mode = "web";
 
+  dataFromAcquire.recordingUID = recordingUID
+
+  dataFromAcquire = data
+
   // recording.web(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken, mode)
 };
 
 const startScreenRecording = async (e) => {
+
+//  UI Manipulations
   console.log("Starting to record");
 
+  $(e.target).text("✅ Recording Started")
   $(e.target).prop("disabled", true);
+  $(`#stop-record-btn`).prop("disabled", false);;
   $(`#stop-record-btn`).show();
 
-  toggleRecordingText();
+
+
+  // Record Web Page 
+
+  console.log("currentData ==> ", dataFromAcquire);
+
+  let data = dataFromAcquire
+
+  const recordingClientToken = await generate.rtcToken(
+    CONSTANTS.CHANNEL,
+    data.recordingUID,
+    "audience"
+  );
+
+
+let recordingData = recording.startWebRecording(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken)
+
 };
 
 const stopScreenRecording = async (e) => {
+
+  // ALL THE UI MANIPULATIONS START
+
   console.log("stopping to record");
 
-  intervalContinue = false;
-  toggleRecordingText();
+// acquire button enabled and text changed
   $(`#acquire-btn`).prop("disabled", false);
   $(`#acquire-btn`).text("Acquire Signal");
-};
+
+  // stop recording button disabled and hidden
+  $(e.target).prop("disabled", true);
+  $(e.target).hide();
+
+  // start recording button enabled and text changed and hidden for next cycle
+  $(`#start-record-btn`).hide();
+  $(`#start-record-btn`).prop("disabled", false);
+  $(`#start-record-btn`).text("Start Recording");
 
 
-
-const updateTextInterval = () => {
-  count++;
-  $("#acquire-btn").text(wordsArray[count % wordsArray.length]);
-};
-
-const toggleRecordingText = () => {
-  console.log("Interval continue => ", intervalContinue);
-  let count = 0;
-  let wordsArray = [
-    "✅ Recording.",
-    "✅ Recording..",
-    "✅ Recording...",
-    "✅ Recording....",
-  ];
-  if (intervalContinue) {
-    const stopThisInterval = setInterval(updateTextInterval, 500);
-  } else {
-    clearInterval(stopThisInterval);
-  }
+  
 };
 
 
