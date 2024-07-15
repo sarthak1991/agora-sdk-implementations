@@ -252,7 +252,7 @@ let joinStream = async (role) => {
     let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
     console.log(`rtcToken --> `, rtcToken);
-    console.log("UID", UID);
+    console.log("UID", uid);
 
     console.log("Clicked join stream");
 

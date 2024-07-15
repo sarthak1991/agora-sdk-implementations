@@ -34,7 +34,7 @@ const fetchResults = async (URL, requestBody, method = CONSTANTS.METHOD) => {
 
 // ========================== WEB RECORDING BLOCK STARTS ================
 
-{
+
 const acquireRecording = async (APPID, AccessChannel, uid) => {
   let acquired = false;
 
@@ -129,14 +129,14 @@ const recording = {
   stopWebRecording
 };
 
-}
+
 
 // ========================== WEB RECORDING BLOCK ENDS =================
 
 
 // ========================== MEDIA PUSH BLOCK START ================
 
-{
+
 const createRtmpConverter = async (region, APPID, AccessChannel, ImageUID, rtcUid, RTMPUrl, idleTimeout) => {
   const url = `https://api.agora.io/${region}/v1/projects/${APPID}/rtmp-converters`;
 
@@ -284,14 +284,14 @@ const mediaPush = {
 
 }
 
-}
+
 
 // ========================== MEDIA PUSH BLOCK END ==================
 
 
 // ========================== MEDIA PULL BLOCK START ==================
 
-{
+
 const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel, CloudPlayerUID, idleTimeout = 300) => {
   const url = `https://api.agora.io/${region}/v1/projects/${APPID}/cloud-player/players`;
 
@@ -381,7 +381,7 @@ const mediaPull = {
   delete: deleteCloudPlayer,
   list: listCloudPlayers
 }
-}
+
 
 // ========================== MEDIA PULL BLOCK END ====================
 
