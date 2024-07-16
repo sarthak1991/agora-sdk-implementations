@@ -184,7 +184,6 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     await processor.init();
 
-    // localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
     localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
 
     // processor.setOptions({type: 'blur', blurDegree: 2});
