@@ -24,9 +24,9 @@ let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
-let dataFromAcquire = {}
-let dataFromStartRecording = {}
-let dataFromStopRecording = {}
+let dataFromAcquire = {};
+let dataFromStartRecording = {};
+let dataFromStopRecording = {};
 
 /**
  * Step 0
@@ -375,15 +375,11 @@ const signalAcquisition = async (e) => {
 
   const recordingUID = generate.recordingUID();
 
-
-
   let data = await recording.acquire(
     CONSTANTS.APPID,
     CONSTANTS.CHANNEL,
     recordingUID
   );
-
-  
 
   data
     ? $(e.target).text("✅ Signal Acquired") &&
@@ -396,30 +392,27 @@ const signalAcquisition = async (e) => {
 
   let mode = "web";
 
-  dataFromAcquire.recordingUID = recordingUID
+  dataFromAcquire.recordingUID = recordingUID;
 
-  dataFromAcquire = data
+  dataFromAcquire = data;
 
   // recording.web(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken, mode)
 };
 
 const startScreenRecording = async (e) => {
-
-//  UI Manipulations
+  //  UI Manipulations
   console.log("Starting to record");
 
-  $(e.target).text("✅ Recording Started")
+  $(e.target).text("✅ Recording Started");
   $(e.target).prop("disabled", true);
-  $(`#stop-record-btn`).prop("disabled", false);;
+  $(`#stop-record-btn`).prop("disabled", false);
   $(`#stop-record-btn`).show();
 
-
-
-  // Record Web Page 
+  // Record Web Page
 
   console.log("currentData ==> ", dataFromAcquire);
 
-  let data = dataFromAcquire
+  let data = dataFromAcquire;
 
   const recordingClientToken = await generate.rtcToken(
     CONSTANTS.CHANNEL,
@@ -427,18 +420,21 @@ const startScreenRecording = async (e) => {
     "audience"
   );
 
-
-let recordingData = recording.startWebRecording(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken)
-
+  let recordingData = recording.startWebRecording(
+    CONSTANTS.APPID,
+    data.resourceID,
+    data.cname,
+    data.uid,
+    recordingClientToken
+  );
 };
 
 const stopScreenRecording = async (e) => {
-
   // ALL THE UI MANIPULATIONS START
 
   console.log("stopping to record");
 
-// acquire button enabled and text changed
+  // acquire button enabled and text changed
   $(`#acquire-btn`).prop("disabled", false);
   $(`#acquire-btn`).text("Acquire Signal");
 
@@ -450,12 +446,7 @@ const stopScreenRecording = async (e) => {
   $(`#start-record-btn`).hide();
   $(`#start-record-btn`).prop("disabled", false);
   $(`#start-record-btn`).text("Start Recording");
-
-
-  
 };
-
-
 
 // Placeholder functions for layout views
 let setGridLayout = () => {
