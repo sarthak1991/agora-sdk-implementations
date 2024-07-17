@@ -58,6 +58,43 @@ const init_rtc = async (uid, token) => {
   return [UID, localTracks];
 };
 
+
+
+
+const setupVirtualBackground = async () => {
+  const extension = new VirtualBackgroundExtension();
+  if (!extension.checkCompatibility()) {
+    console.error("Virtual Background is not supported in this browser!");
+    return null;
+  }
+
+  AgoraRTC.registerExtensions([extension]);
+  const processor = extension.createProcessor();
+  await processor.init();
+
+  return processor;
+};
+
+// Add this function to handle background changes
+const changeBackground = async (processor, type, value) => {
+  if (!processor) {
+    console.error("Virtual Background processor is not initialized.");
+    return;
+  }
+
+  if (type === 'blur') {
+    await processor.setOptions({ type: 'blur', blurDegree: value });
+  } else if (type === 'color') {
+    await processor.setOptions({ type: 'color', color: value });
+  }
+
+  await processor.enable();
+};
+
+
+
+
+
 /**
  * Step 3.2:
  * Initialize the signaling SDK
@@ -164,35 +201,79 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     // TEST-=-=-=-=-=-=-=-=-=-DENOISER END -=-=-=-=-=-=-=-=-=-=-=-=-
 
-    // VIDEO BLUR START -----------================-------------=============---------==========---------========------=====
 
-    let cloudToken = generate.authenticateCloud();
 
-    // console.log(`CLOUD TOKEN START-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+    const virtualBgProcessor = await setupVirtualBackground();
 
-    // console.log(cloudToken);
-    // console.log(`CLOUD TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
-
-    const extension = new VirtualBackgroundExtension();
-    if (!extension.checkCompatibility()) {
-      // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
-      console.error("Does not support Virtual Background!");
+    if (virtualBgProcessor) {
+      localTracks[1].pipe(virtualBgProcessor).pipe(localTracks[1].processorDestination);
     }
-    // Register plugin
-    AgoraRTC.registerExtensions([extension]);
 
-    const processor = extension.createProcessor();
 
-    await processor.init();
 
-    localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
 
-    // processor.setOptions({type: 'blur', blurDegree: 2});
-    processor.setOptions({ type: "color", color: "#00ff00" });
+    // // VIDEO BLUR START -----------================-------------=============---------==========---------========------=====
 
-    await processor.enable();
+    // let cloudToken = generate.authenticateCloud();
 
-    // VIDEO BLUR END -----------================-------------=============---------==========---------========------=====
+    // // console.log(`CLOUD TOKEN START-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+
+    // // console.log(cloudToken);
+    // // console.log(`CLOUD TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
+
+    // const extension = new VirtualBackgroundExtension();
+    // if (!extension.checkCompatibility()) {
+    //   // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
+    //   console.error("Does not support Virtual Background!");
+    // }
+    // // Register plugin
+    // AgoraRTC.registerExtensions([extension]);
+
+    // const processor = extension.createProcessor();
+
+    // await processor.init();
+
+    // localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
+
+    // // processor.setOptions({type: 'blur', blurDegree: 2});
+    // processor.setOptions({ type: "color", color: "#00ff00" });
+
+    // await processor.enable();
+
+    // // VIDEO BLUR END -----------================-------------=============---------==========---------========------=====
+
+    // Add event listeners for the background change buttons
+    $("#change-bg-btn").on("click", () => {
+      $("#bg-options").toggle();
+    });
+
+    $("#blur-bg-btn").on("click", () => {
+      changeBackground(virtualBgProcessor, 'blur', 2);
+      $("#bg-options").hide();
+    });
+
+    // Modified color picker event handling
+    $("#color-picker").on("input", (e) => {
+      const color = e.target.value;
+      changeBackground(virtualBgProcessor, 'color', color);
+    });
+
+    $("#color-picker-form").on("submit", (e) => {
+      e.preventDefault();
+      const color = $("#color-picker").val();
+      changeBackground(virtualBgProcessor, 'color', color);
+      $("#bg-options").hide();
+    });
+
+    // New event listener for Enter key
+    $("#color-picker").on("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const color = e.target.value;
+        changeBackground(virtualBgProcessor, 'color', color);
+        $("#bg-options").hide();
+      }
+    });
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
