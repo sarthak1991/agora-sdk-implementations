@@ -59,10 +59,10 @@ const generateAuthorizationCredentialForCloudRecording = () => {
 
   // DO NOT COMMIT THIS
   // Customer ID
-  const customerKey = "229676859a9f412fb3af3731ce6a49f2"
+  const customerKey = CONSTANTS.customerID
   
   // Customer secret
-  const customerSecret = "8b9cf7b5e572415ebdb9cb44c27ae8df"
+  const customerSecret = CONSTANTS.customerSecret
   
   // Concatenate customer key and customer secret and use base64 to encode the concatenated string
   const plainCredential = customerKey + ":" + customerSecret

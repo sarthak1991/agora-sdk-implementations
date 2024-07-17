@@ -368,51 +368,89 @@ let toggleCamera = async (e) => {
   }
 };
 
+let isRecording = false;
+let recordingData = null;
+let acquisitionData = null;
+
 const signalAcquisition = async (e) => {
-  // hide screen recording button
+  if (!isRecording) {
+    // Attempt to acquire signal and start recording
+    try {
+      const recordingUID = generate.recordingUID();
+      const data = await recording.acquire(
+        CONSTANTS.APPID,
+        CONSTANTS.CHANNEL,
+        recordingUID
+      );
 
-  $("#record-btn").hide();
+      if (data) {
+        // Signal acquired successfully
+        acquisitionData = { ...data, recordingUID };
 
-  const recordingUID = generate.recordingUID();
+        console.log("acquisitionData");
+        console.log(acquisitionData);
+        
+        // Start recording
+         const recordingClientToken = await generate.rtcToken(CONSTANTS.CHANNEL, acquisitionData.uid, "audience");
+         recordingData =  await recording.startWebRecording(
+          CONSTANTS.APPID,
+          data.resourceId,
+          data.cname,
+          data.uid,
+          recordingClientToken
+        );
 
-  let data = await recording.acquire(
-    CONSTANTS.APPID,
-    CONSTANTS.CHANNEL,
-    recordingUID
-  );
+        console.log("data from recording = > ");
+        console.log(recordingData);
 
-  data
-    ? $(e.target).text("✅ Signal Acquired") &&
-      // $(e.target).css("background-color", "#75d470") &&
-      $(e.target).prop("disabled", true) &&
-      $("#start-record-btn").show()
-    : // $("#record-btn").click()
-      // (toggleRecordingText())
-      $(e.target).text("❌ Signal failed");
+        // Update UI
+        $(e.target).text("Stop Recording");
+        $(e.target).css("background-color", "#EE4B2B");
+        isRecording = true;
+      } else {
+        // Signal acquisition failed
+        $(e.target).text("❌ Signal failed");
+        setTimeout(() => {
+          $(e.target).text("Acquire Signal");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error in signal acquisition or starting recording:", error);
+      $(e.target).text("❌ Error occurred");
+      setTimeout(() => {
+        $(e.target).text("Acquire Signal");
+      }, 3000);
+    }
+  } else {
+    // Stop recording
+    try {
 
-  let mode = "web";
+      if (recordingData) {
+        await recording.stopWebRecording(CONSTANTS.APPID, recordingData.resourceId, recordingData.sid, CONSTANTS.CHANNEL, recordingData.uid)
+      }
 
-  dataFromAcquire.recordingUID = recordingUID;
-
-  dataFromAcquire = data;
-
-  // recording.web(CONSTANTS.APPID, data.resourceID, data.cname, data.uid, recordingClientToken, mode)
+      // Update UI
+      $(e.target).text("Acquire Signal");
+      $(e.target).css("background-color", ""); // Reset to default color
+      isRecording = false;
+      recordingData = null;
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      $(e.target).text("❌ Error stopping");
+      setTimeout(() => {
+        $(e.target).text("Stop Recording");
+      }, 3000);
+    }
+  }
 };
 
-const startScreenRecording = async (e) => {
+const startScreenRecording = async (recordingButton, data) => {
   //  UI Manipulations
-  console.log("Starting to record");
+  console.log("=-=-=-=-=-=-=-=-=-=-=-=-=-=Inside recording-=-=-=-=-=-=-==-=-==-");
+  console.log(recordingButton);
+  console.log(data);
 
-  $(e.target).text("✅ Recording Started");
-  $(e.target).prop("disabled", true);
-  $(`#stop-record-btn`).prop("disabled", false);
-  $(`#stop-record-btn`).show();
-
-  // Record Web Page
-
-  console.log("currentData ==> ", dataFromAcquire);
-
-  let data = dataFromAcquire;
+  recordingButton.text("✅ Recording Started");
 
   const recordingClientToken = await generate.rtcToken(
     CONSTANTS.CHANNEL,
@@ -427,6 +465,13 @@ const startScreenRecording = async (e) => {
     data.uid,
     recordingClientToken
   );
+
+
+  dataFromStartRecording = recordingData
+  // dataFromAcquire.recordingUID = recordingUID;
+
+  // dataFromAcquire = data;
+
 };
 
 const stopScreenRecording = async (e) => {

@@ -38,6 +38,11 @@ const fetchResults = async (URL, requestBody, method = CONSTANTS.METHOD) => {
 const acquireRecording = async (APPID, AccessChannel, uid) => {
   let acquired = false;
 
+  console.log("Here's everything we need");
+  console.log(APPID);
+  console.log(AccessChannel);
+  console.log(uid);
+
   const acquireURL = `https://api.agora.io/v1/apps/${APPID}/cloud_recording/acquire`;
 
   const requestBody = {
@@ -69,9 +74,7 @@ const startWebRecording = async (
   rtcToken,
   mode = "web"
 ) => {
-  const webRecordingUrl = `https://api.agora.io/v1/apps/${{
-    APPID,
-  }}/cloud_recording/resourceid/${{ resourceID }}/mode/${{ mode }}/start`;
+  const webRecordingUrl = `https://api.agora.io/v1/apps/${APPID}/cloud_recording/resourceid/${resourceID}/mode/${mode}/start`;
 
   const requestBody = {
     cname,
@@ -101,26 +104,50 @@ const startWebRecording = async (
         vendor: 2,
         region: 7,
         bucket: "agoracloudrecordingdemo",
-        accessKey: "AKIA6GBMGYVGU2TPYZHN",
-        secretKey: "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",
+        accessKey: "SAKIA6GBMGYVGU2TPYZHNNO",
+        secretKey: "BmByDu4t3/mxxvheOLlhO0BDkKmQxYBPoxMyIXtKdNO",
       },
     },
   };
 
-console.log("recording requestBody => ", );
+console.log("recording requestBody => ", requestBody );
+
+
+// do NOT uncomment lines 1-5 until you are ready to record.
+
+ const response = await fetchResults(webRecordingUrl, requestBody);
+
+ const data = await response.json();
+
+ console.log("data==> ", data);
+
+ console.log("recording has started?==> ", response.status == 200 ? true : false);
+ return data;
 
 
 //   function ends here
 };
 
-const stopWebRecording = async () => {
-    const stopWebRecordingUrl = `https://api.agora.io/v1/apps/${{APPID}}/cloud_recording/resourceid/${{resourceId}}/sid/${{sid}}/mode/${{mode}}/stop`
+const stopWebRecording = async (APPID, resourceId, sid, AccessChannel, RecordingUID, mode="web") => {
+    const stopWebRecordingUrl = `https://api.agora.io/v1/apps/${APPID}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/${mode}/stop`
 
     const requestBody = {
         cname: AccessChannel,
         uid: RecordingUID,
         clientRequest: {}
     }
+
+    console.log("stop recording requestBody => ", requestBody );
+    // do NOT uncomment lines 1-5 until you are ready to record.
+
+ const response = await fetchResults(stopWebRecordingUrl, requestBody);
+
+ const data = await response.json();
+
+ console.log("data==> ", data);
+
+ console.log("recording has stopped?==> ", response.status == 200 ? true : false);
+ return data;
 }
 
 const recording = {
