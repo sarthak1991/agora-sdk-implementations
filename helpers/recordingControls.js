@@ -3,6 +3,9 @@ import generate from "./generators";
 
 const bearerToken = generate.authenticateCloud();
 
+const TOKEN_SERVER_URL = "https://reactdelhi.com";
+const local_token_server = "http://localhost:8080"
+
 // console.log("this is the bearer token-=-=-=-=-=-=-=-=-=-=");
 
 // console.log(bearerToken);
@@ -228,7 +231,7 @@ export const createRtmpConverter = async (
   // let urlForCreateStream =
 
   try {
-    const response = await fetch("http://localhost:8080/createLiveStream", {
+    const response = await fetch(`${TOKEN_SERVER_URL}/createLiveStream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -299,7 +302,7 @@ export const deleteRtmpConverter = async (region, APPID, id) => {
   console.log(id);
 
   try {
-    const response = await fetch("http://localhost:8080/deleteLiveStream", {
+    const response = await fetch(`${TOKEN_SERVER_URL}/deleteLiveStream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -347,7 +350,7 @@ export const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel,
   console.log(requestBody);
 
   try {
-    const response = await fetch("http://localhost:8080/createMediaPull", {
+    const response = await fetch(`${TOKEN_SERVER_URL}/createMediaPull`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -367,27 +370,38 @@ export const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel,
   }
 };
 
-const deleteCloudPlayer = async (region, APPID, id) => {
-  const url = `https://api.agora.io/${region}/v1/projects/${APPID}/cloud-player/players/${id}`;
+export const deleteCloudPlayer = async (region, APPID, id) => {
+
+  const requestBody = { id };
+
+  console.log(
+    "+__+_+_+_+_+_+_+_+_+DAta from stream create=====----+__+_+_+_+_+_"
+  );
+  console.log(id);
 
   try {
-    const response = await fetch(url, {
-      method: "DELETE",
+    const response = await fetch(`${TOKEN_SERVER_URL}/deleteMediaPull`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify(requestBody),
     });
 
-    if (response.ok) {
-      console.log("Cloud Player deleted successfully");
-      return true;
-    } else {
-      const errorData = await response.json();
-      console.error("Error deleting Cloud Player:", errorData);
-      return false;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    // If the server returns no content, just return a success message
+    if (response.status === 204) {
+      return { message: "RTMP converter deleted successfully" };
+    }
+
+    // If the server returns content, parse and return it
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error deleting Cloud Player:", error);
+    console.error("Error deleting RTMP converter:", error);
     throw error;
   }
 };

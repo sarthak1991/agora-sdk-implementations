@@ -11,7 +11,7 @@ import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer} from "./helpers/recordingControls"
+import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/recordingControls"
 import CONSTANTS from "./helpers/CONSTS";
 
 // eac91002da8b4caabfdde1753ad8dd90
@@ -27,6 +27,7 @@ let UID = "";
 let userUID = null
 
 let dataFromStreamCreate = null
+let dataFromMediaPull = null
 
 /**
  * Step 0
@@ -553,13 +554,27 @@ try {
     hostTokenForCloudPull,
     idleTimeout
   );
+
+  dataFromMediaPull = data
   console.log("Cloud player created:", data);
 } catch (error) {
   console.error("Failed to create cloud player:", error);
 }
 }
 
+const mediaPullStop = async (e) => {
+  const region = CONSTANTS.rtmpRegion
+const APPID = CONSTANTS.APPID
+console.log(dataFromMediaPull.data.player.id);
+const id = dataFromMediaPull.data.player.id
 
+try {
+  const result = await deleteCloudPlayer(region, APPID, id);
+  console.log("Cloud player deleted:", result);
+} catch (error) {
+  console.error("Failed to delete cloud player:", error);
+}
+}
 
 
 
@@ -578,7 +593,7 @@ $("#camera-btn").on("click", toggleCamera);
 $("#acquire-btn").on("click", toggleRecording);
 $("#mediapush-toggle-btn").on("click", toggleMediaPush);
 $("#mediapull-start-btn").on("click", mediaPullStart);
-// $("#mediapull-stop-btn").on("click", mediaPullStop);
+$("#mediapull-stop-btn").on("click", mediaPullStop);
 
 
 // Event handlers for layout views
