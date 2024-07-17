@@ -3,9 +3,11 @@ import generate from "./generators";
 
 const bearerToken = generate.authenticateCloud();
 
+// console.log("this is the bearer token-=-=-=-=-=-=-=-=-=-=");
+
+// console.log(bearerToken);
+
 const fetchResults = async (URL, requestBody, method = CONSTANTS.METHOD) => {
-
-
   const body = JSON.stringify(requestBody);
 
   const options = {
@@ -31,11 +33,9 @@ const fetchResults = async (URL, requestBody, method = CONSTANTS.METHOD) => {
   return dataToReturn;
 };
 
-
 // ========================== WEB RECORDING BLOCK STARTS ================
 
-
-const acquireRecording = async (APPID, AccessChannel, uid) => {
+export const acquireRecording = async (APPID, AccessChannel, uid) => {
   let acquired = false;
 
   console.log("Here's everything we need");
@@ -66,7 +66,7 @@ const acquireRecording = async (APPID, AccessChannel, uid) => {
   return data;
 };
 
-const startWebRecording = async (
+export const startWebRecording = async (
   APPID,
   resourceID,
   cname,
@@ -110,79 +110,93 @@ const startWebRecording = async (
     },
   };
 
-console.log("recording requestBody => ", requestBody );
+  console.log("recording requestBody => ", requestBody);
 
+  // do NOT uncomment lines 1-5 until you are ready to record.
 
-// do NOT uncomment lines 1-5 until you are ready to record.
+  const response = await fetchResults(webRecordingUrl, requestBody);
 
- const response = await fetchResults(webRecordingUrl, requestBody);
+  const data = await response.json();
 
- const data = await response.json();
+  console.log("data==> ", data);
 
- console.log("data==> ", data);
+  console.log(
+    "recording has started?==> ",
+    response.status == 200 ? true : false
+  );
+  return data;
 
- console.log("recording has started?==> ", response.status == 200 ? true : false);
- return data;
-
-
-//   function ends here
+  //   function ends here
 };
 
-const stopWebRecording = async (APPID, resourceId, sid, AccessChannel, RecordingUID, mode="web") => {
-    const stopWebRecordingUrl = `https://api.agora.io/v1/apps/${APPID}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/${mode}/stop`
+export const stopWebRecording = async (
+  APPID,
+  resourceId,
+  sid,
+  AccessChannel,
+  RecordingUID,
+  mode = "web"
+) => {
+  const stopWebRecordingUrl = `https://api.agora.io/v1/apps/${APPID}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/${mode}/stop`;
 
-    const requestBody = {
-        cname: AccessChannel,
-        uid: RecordingUID,
-        clientRequest: {}
-    }
+  const requestBody = {
+    cname: AccessChannel,
+    uid: RecordingUID,
+    clientRequest: {},
+  };
 
-    console.log("stop recording requestBody => ", requestBody );
-    // do NOT uncomment lines 1-5 until you are ready to record.
+  console.log("stop recording requestBody => ", requestBody);
+  // do NOT uncomment lines 1-5 until you are ready to record.
 
- const response = await fetchResults(stopWebRecordingUrl, requestBody);
+  const response = await fetchResults(stopWebRecordingUrl, requestBody);
 
- const data = await response.json();
+  const data = await response.json();
 
- console.log("data==> ", data);
+  console.log("data==> ", data);
 
- console.log("recording has stopped?==> ", response.status == 200 ? true : false);
- return data;
-}
+  console.log(
+    "recording has stopped?==> ",
+    response.status == 200 ? true : false
+  );
+  return data;
+};
 
 const recording = {
   acquire: acquireRecording,
   startWebRecording,
-  stopWebRecording
+  stopWebRecording,
 };
-
-
 
 // ========================== WEB RECORDING BLOCK ENDS =================
 
-
 // ========================== MEDIA PUSH BLOCK START ================
 
-
-const createRtmpConverter = async (region, APPID, AccessChannel, ImageUID, rtcUid, RTMPUrl, idleTimeout) => {
-  const url = `https://api.agora.io/${region}/v1/projects/${APPID}/rtmp-converters`;
-
+export const createRtmpConverter = async (
+  name,
+  region,
+  APPID,
+  AccessChannel,
+  ImageUID,
+  RTMPUrl,
+  rtcToken,
+  idleTimeout = 300
+) => {
   const requestBody = {
     converter: {
-      name: "test",
+      name,
       transcodeOptions: {
         rtcChannel: AccessChannel,
-        token: "",
+        token: rtcToken,
         audioOptions: {
           codecProfile: "LC-AAC",
           sampleRate: 48000,
           bitrate: 48,
-          audioChannels: 1
+          audioChannels: 1,
         },
         videoOptions: {
           canvas: {
             width: 960,
-            height: 720
+            height: 720,
           },
           layout: [
             {
@@ -192,134 +206,141 @@ const createRtmpConverter = async (region, APPID, AccessChannel, ImageUID, rtcUi
                 yPos: 0,
                 zIndex: 1,
                 width: 480,
-                height: 720
+                height: 720,
               },
               fillMode: "fill",
-              placeholderImageUrl: "http://example.agora.io/host_placeholder.jpg"
+              placeholderImageUrl:
+                "http://example.agora.io/host_placeholder.jpg",
             },
-            {
-              rtcStreamUid: rtcUid,
-              region: {
-                xPos: 480,
-                yPos: 0,
-                zIndex: 1,
-                width: 480,
-                height: 720
-              }
-            }
           ],
           codecProfile: "main",
           frameRate: 15,
           gop: 30,
-          bitrate: 910
-        }
+          bitrate: 910,
+        },
       },
       rtmpUrl: RTMPUrl,
-      idleTimeOut: idleTimeout
-    }
+      idleTimeOut: idleTimeout,
+    },
+    region: CONSTANTS.rtmpRegion,
+    APPID: CONSTANTS.APPID,
   };
 
+  console.log("Request Body for RTMP Converter");
+  console.log(requestBody);
+
+  // let urlForCreateStream =
+
   try {
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await fetch("http://localhost:8080/createLiveStream", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-Request-ID': ''
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
 
-    const data = await response.json();
-    console.log("RTMP Converter creation response:", data);
-    return data;
-  } catch (error) {
-    console.error("Error creating RTMP Converter:", error);
-    throw error;
-  }
-};
-
-const getRtmpConverter = async (region, APPID, id) => {
-  const url = `https://api.agora.io/${region}/v1/projects/${APPID}/rtmp-converters/${id}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const data = await response.json();
-    console.log("RTMP Converter details:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching RTMP Converter details:", error);
-    throw error;
-  }
-};
-
-const listRtmpConverters = async (APPID) => {
-  const url = `https://api.agora.io/v1/projects/${APPID}/rtmp-converters`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const data = await response.json();
-    console.log("RTMP Converters list:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching RTMP Converters list:", error);
-    throw error;
-  }
-};
-
-const deleteRtmpConverter = async (region, APPID, id) => {
-  const url = `https://api.agora.io/${region}/v1/projects/${APPID}/rtmp-converters/${id}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      console.log("RTMP Converter deleted successfully");
-      return true;
-    } else {
-      const errorData = await response.json();
-      console.error("Error deleting RTMP Converter:", errorData);
-      return false;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    let data = await response.json();
+
+    // console.log("RTMP converter created-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=>>>>>>>>>>>>>>>>>>>>>>>>>", data);
+    return data;
   } catch (error) {
-    console.error("Error deleting RTMP Converter:", error);
+    console.error("Error creating RTMP converter:", error);
     throw error;
   }
 };
 
-const mediaPush = {
-  create: createRtmpConverter,
-  getStatus:getRtmpConverter,
-  list: listRtmpConverters,
-  delete: deleteRtmpConverter
+// const getRtmpConverter = async (region, APPID, id) => {
+//   const url = `https://api.agora.io/${region}/v1/projects/${APPID}/rtmp-converters/${id}`;
 
-}
+//   try {
+//     const response = await fetch(url, {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
 
+//     const data = await response.json();
+//     console.log("RTMP Converter details:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching RTMP Converter details:", error);
+//     throw error;
+//   }
+// };
 
+// const listRtmpConverters = async (APPID) => {
+//   const url = `https://api.agora.io/v1/projects/${APPID}/rtmp-converters`;
+
+//   try {
+//     const response = await fetch(url, {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
+
+//     const data = await response.json();
+//     console.log("RTMP Converters list:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching RTMP Converters list:", error);
+//     throw error;
+//   }
+// };
+
+export const deleteRtmpConverter = async (region, APPID, id) => {
+  const requestBody = { id };
+
+  console.log(
+    "+__+_+_+_+_+_+_+_+_+DAta from stream create=====----+__+_+_+_+_+_"
+  );
+  console.log(id);
+
+  try {
+    const response = await fetch("http://localhost:8080/deleteLiveStream", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // If the server returns no content, just return a success message
+    if (response.status === 204) {
+      return { message: "RTMP converter deleted successfully" };
+    }
+
+    // If the server returns content, parse and return it
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting RTMP converter:", error);
+    throw error;
+  }
+};
 
 // ========================== MEDIA PUSH BLOCK END ==================
 
-
 // ========================== MEDIA PULL BLOCK START ==================
 
-
-const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel, CloudPlayerUID, idleTimeout = 300) => {
+const createCloudPlayer = async (
+  region,
+  APPID,
+  InjectUrl,
+  AccessChannel,
+  CloudPlayerUID,
+  idleTimeout = 300
+) => {
   const url = `https://api.agora.io/${region}/v1/projects/${APPID}/cloud-player/players`;
 
   const requestBody = {
@@ -330,17 +351,17 @@ const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel, CloudP
       uid: CloudPlayerUID,
       // account: CloudPlayerStringUid, // Uncomment if needed
       idleTimeout: idleTimeout,
-      name: "test"
-    }
+      name: "test",
+    },
   };
 
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
@@ -357,10 +378,10 @@ const deleteCloudPlayer = async (region, APPID, id) => {
 
   try {
     const response = await fetch(url, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     if (response.ok) {
@@ -382,10 +403,10 @@ const listCloudPlayers = async (APPID) => {
 
   try {
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     if (response.ok) {
@@ -406,12 +427,9 @@ const listCloudPlayers = async (APPID) => {
 const mediaPull = {
   create: createCloudPlayer,
   delete: deleteCloudPlayer,
-  list: listCloudPlayers
-}
-
+  list: listCloudPlayers,
+};
 
 // ========================== MEDIA PULL BLOCK END ====================
-
-
 
 export default recording;

@@ -17,7 +17,7 @@ const generateUID = () => {
 };
 
 
-const generateRecordingUID = () => {
+const numericUID = () => {
 
   const randomNineDigitNumber = (Math.floor(Math.random() * 1000000000)).toString();
 
@@ -78,13 +78,33 @@ const generateAuthorizationCredentialForCloudRecording = () => {
 
 }
 
+
+
+// create live stream 
+
+const createLiveStream = async (name, region, APPID, AccessChannel, ImageUID, RTMPUrl, rtcToken, idleTimeout=300) => {
+  console.log(`Inside Generate RTC Token`);
+  try {
+    let response = await fetch(
+      `${TOKEN_SERVER_URL}/livestream//${name}/${region}/${APPID}/${AccessChannel}/${ImageUID}/${RTMPUrl}/${rtcToken}/${idleTimeout}`
+    );
+    let data = await response.json();
+    let token = data.rtcToken;
+    return token;
+  } catch (error) {
+    console.log("Error in generating RTC token");
+    console.log(error);
+  }
+};
+
 // Exporting all the generator functions inside a single variable called generate. Enhances the readability!
 const generate = {
   uid: generateUID,
   rtcToken: generateRTCToken,
   rtmToken: generateRTMToken,
   authenticateCloud: generateAuthorizationCredentialForCloudRecording,
-  recordingUID: generateRecordingUID
+  numericUID, 
+  createLiveStream
 };
 
 export default generate;

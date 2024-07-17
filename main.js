@@ -11,7 +11,7 @@ import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import recording from "./helpers/recordingControls";
+import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter} from "./helpers/recordingControls"
 import CONSTANTS from "./helpers/CONSTS";
 
 // eac91002da8b4caabfdde1753ad8dd90
@@ -24,9 +24,13 @@ let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
+let userUID = null
+
 let dataFromAcquire = {};
 let dataFromStartRecording = {};
 let dataFromStopRecording = {};
+
+let dataFromStreamCreate = null
 
 /**
  * Step 0
@@ -247,7 +251,8 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 let joinStream = async (role) => {
   try {
     // generate UID and RTC token using custom logic written in ./helpers.generators.js | Split the logic into a different file to keep this file lean
-    let uid = generate.uid();
+    let uid = generate.numericUID();
+    userUID = uid
     let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
     console.log(`rtcToken --> `, rtcToken);
@@ -372,126 +377,126 @@ let isRecording = false;
 let recordingData = null;
 let acquisitionData = null;
 
-const signalAcquisition = async (e) => {
+const toggleRecording = async (e) => {
+  const $button = $(e.target);
+  
+  const disableButton = () => {
+    $button.prop('disabled', true);
+    $button.css('opacity', '0.5');
+  };
+
+  const enableButton = () => {
+    $button.prop('disabled', false);
+    $button.css('opacity', '1');
+  };
+
+  const setButtonError = (message) => {
+    $button.text(`❌ ${message}`);
+    setTimeout(() => {
+      $button.text(isRecording ? "Stop Recording" : "Start Recording");
+    }, 3000);
+  };
+
+  disableButton();
+
   if (!isRecording) {
-    // Attempt to acquire signal and start recording
     try {
-      const recordingUID = generate.recordingUID();
-      const data = await recording.acquire(
+      const recordingUID = generate.numericUID();
+      const data = await acquireRecording(
         CONSTANTS.APPID,
         CONSTANTS.CHANNEL,
         recordingUID
       );
 
       if (data) {
-        // Signal acquired successfully
         acquisitionData = { ...data, recordingUID };
+        console.log("acquisitionData", acquisitionData);
 
-        console.log("acquisitionData");
-        console.log(acquisitionData);
-        
-        // Start recording
-         const recordingClientToken = await generate.rtcToken(CONSTANTS.CHANNEL, acquisitionData.uid, "audience");
-         recordingData =  await recording.startWebRecording(
+        const recordingClientToken = await generate.rtcToken(CONSTANTS.CHANNEL, acquisitionData.uid, "audience");
+        recordingData = await startWebRecording(
           CONSTANTS.APPID,
           data.resourceId,
           data.cname,
           data.uid,
           recordingClientToken
         );
+        console.log("data from recording =>", recordingData);
 
-        console.log("data from recording = > ");
-        console.log(recordingData);
-
-        // Update UI
-        $(e.target).text("Stop Recording");
-        $(e.target).css("background-color", "#EE4B2B");
+        $button.text("Stop Recording");
+        $button.css("background-color", "#EE4B2B");
         isRecording = true;
       } else {
-        // Signal acquisition failed
-        $(e.target).text("❌ Signal failed");
-        setTimeout(() => {
-          $(e.target).text("Acquire Signal");
-        }, 3000);
+        setButtonError("Signal failed");
       }
     } catch (error) {
       console.error("Error in signal acquisition or starting recording:", error);
-      $(e.target).text("❌ Error occurred");
-      setTimeout(() => {
-        $(e.target).text("Acquire Signal");
-      }, 3000);
+      setButtonError("Error occurred");
     }
   } else {
-    // Stop recording
     try {
-
       if (recordingData) {
-        await recording.stopWebRecording(CONSTANTS.APPID, recordingData.resourceId, recordingData.sid, CONSTANTS.CHANNEL, recordingData.uid)
+        await stopWebRecording(
+          CONSTANTS.APPID,
+          recordingData.resourceId,
+          recordingData.sid,
+          CONSTANTS.CHANNEL,
+          recordingData.uid
+        );
       }
-
-      // Update UI
-      $(e.target).text("Acquire Signal");
-      $(e.target).css("background-color", ""); // Reset to default color
+      $button.text("Start Recording");
+      $button.css("background-color", ""); // Reset to default color
       isRecording = false;
       recordingData = null;
     } catch (error) {
       console.error("Error stopping recording:", error);
-      $(e.target).text("❌ Error stopping");
-      setTimeout(() => {
-        $(e.target).text("Stop Recording");
-      }, 3000);
+      setButtonError("Error stopping");
     }
   }
+
+  enableButton();
 };
 
-const startScreenRecording = async (recordingButton, data) => {
-  //  UI Manipulations
-  console.log("=-=-=-=-=-=-=-=-=-=-=-=-=-=Inside recording-=-=-=-=-=-=-==-=-==-");
-  console.log(recordingButton);
-  console.log(data);
+const createMediaPush = async (e) => {
 
-  recordingButton.text("✅ Recording Started");
+  const ImageUID = Number(userUID)
+  const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "audience")
+  const streamName = generate.uid()
 
-  const recordingClientToken = await generate.rtcToken(
-    CONSTANTS.CHANNEL,
-    data.recordingUID,
-    "audience"
-  );
-
-  let recordingData = recording.startWebRecording(
+try {
+  const data = await createRtmpConverter(
+    streamName,
+    CONSTANTS.rtmpRegion,
     CONSTANTS.APPID,
-    data.resourceID,
-    data.cname,
-    data.uid,
-    recordingClientToken
+    CONSTANTS.CHANNEL,
+    ImageUID,
+    CONSTANTS.RTMPUrl,
+    rtcToken
   );
+  console.log("RTMP converter created-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=>>>>>>>>>>>>>>>>>>>>>>>>>", data);
+  dataFromStreamCreate = data
+} catch (error) {
+  console.error("Failed to create RTMP converter:", error);
+}
+}
+
+const stopMediaPush = async (e) => {
+  const region = CONSTANTS.rtmpRegion
+const APPID = CONSTANTS.APPID
+const id = dataFromStreamCreate.data.converter.id
 
 
-  dataFromStartRecording = recordingData
-  // dataFromAcquire.recordingUID = recordingUID;
 
-  // dataFromAcquire = data;
+try {
+  const result = await deleteRtmpConverter(region, APPID, id);
+  console.log("RTMP converter deleted:", result);
+} catch (error) {
+  console.error("Failed to delete RTMP converter:", error);
+}
+}
 
-};
 
-const stopScreenRecording = async (e) => {
-  // ALL THE UI MANIPULATIONS START
 
-  console.log("stopping to record");
 
-  // acquire button enabled and text changed
-  $(`#acquire-btn`).prop("disabled", false);
-  $(`#acquire-btn`).text("Acquire Signal");
-
-  // stop recording button disabled and hidden
-  $(e.target).prop("disabled", true);
-  $(e.target).hide();
-
-  // start recording button enabled and text changed and hidden for next cycle
-  $(`#start-record-btn`).hide();
-  $(`#start-record-btn`).prop("disabled", false);
-  $(`#start-record-btn`).text("Start Recording");
-};
 
 // Placeholder functions for layout views
 let setGridLayout = () => {
@@ -505,9 +510,10 @@ let setActiveSpeakerLayout = () => {
 $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
-$("#acquire-btn").on("click", signalAcquisition);
-$("#start-record-btn").on("click", startScreenRecording);
-$("#stop-record-btn").on("click", stopScreenRecording);
+$("#acquire-btn").on("click", toggleRecording);
+$("#mediapush-create-btn").on("click", createMediaPush);
+// $("#mediapush-list-btn").on("click", listMediaPush);
+$("#mediapush-stop-btn").on("click", stopMediaPush);
 
 // Event handlers for layout views
 $("#grid-layout-btn").on("click", setGridLayout);
