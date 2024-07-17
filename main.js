@@ -456,43 +456,79 @@ const toggleRecording = async (e) => {
   enableButton();
 };
 
-const createMediaPush = async (e) => {
+let isMediaPushing = false;
 
-  const ImageUID = Number(userUID)
-  const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "audience")
-  const streamName = generate.uid()
+const toggleMediaPush = async (e) => {
+  const $button = $(e.target);
+  
+  const disableButton = () => {
+    $button.prop('disabled', true);
+    $button.css('opacity', '0.5');
+  };
 
-try {
-  const data = await createRtmpConverter(
-    streamName,
-    CONSTANTS.rtmpRegion,
-    CONSTANTS.APPID,
-    CONSTANTS.CHANNEL,
-    ImageUID,
-    CONSTANTS.RTMPUrl,
-    rtcToken
-  );
-  console.log("RTMP converter created-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=>>>>>>>>>>>>>>>>>>>>>>>>>", data);
-  dataFromStreamCreate = data
-} catch (error) {
-  console.error("Failed to create RTMP converter:", error);
-}
-}
+  const enableButton = () => {
+    $button.prop('disabled', false);
+    $button.css('opacity', '1');
+  };
 
-const stopMediaPush = async (e) => {
-  const region = CONSTANTS.rtmpRegion
-const APPID = CONSTANTS.APPID
-const id = dataFromStreamCreate.data.converter.id
+  const setButtonError = (message) => {
+    $button.text(`❌ ${message}`);
+    setTimeout(() => {
+      $button.text(isMediaPushing ? "Stop Media Push" : "Start Media Push");
+    }, 3000);
+  };
 
+  disableButton();
 
+  if (!isMediaPushing) {
+    try {
+      const ImageUID = Number(userUID);
+      const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "audience");
+      const streamName = generate.uid();
 
-try {
-  const result = await deleteRtmpConverter(region, APPID, id);
-  console.log("RTMP converter deleted:", result);
-} catch (error) {
-  console.error("Failed to delete RTMP converter:", error);
-}
-}
+      const data = await createRtmpConverter(
+        streamName,
+        CONSTANTS.rtmpRegion,
+        CONSTANTS.APPID,
+        CONSTANTS.CHANNEL,
+        ImageUID,
+        CONSTANTS.RTMPUrl,
+        rtcToken
+      );
+
+      console.log("RTMP converter created:", data);
+      dataFromStreamCreate = data;
+      
+      $button.text("Stop Media Push");
+      $button.css("background-color", "#EE4B2B");
+      isMediaPushing = true;
+    } catch (error) {
+      console.error("Failed to create RTMP converter:", error);
+      setButtonError("Failed to start");
+    }
+  } else {
+    try {
+      if (dataFromStreamCreate) {
+        const result = await deleteRtmpConverter(
+          CONSTANTS.rtmpRegion,
+          CONSTANTS.APPID,
+          dataFromStreamCreate.data.converter.id
+        );
+        console.log("RTMP converter deleted:", result);
+      }
+      
+      $button.text("Start Media Push");
+      $button.css("background-color", ""); // Reset to default color
+      isMediaPushing = false;
+      dataFromStreamCreate = null;
+    } catch (error) {
+      console.error("Failed to delete RTMP converter:", error);
+      setButtonError("Failed to stop");
+    }
+  }
+
+  enableButton();
+};
 
 
 
@@ -511,9 +547,8 @@ $("#leave-btn").on("click", leaveAndRemoveLocalStream);
 $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
 $("#acquire-btn").on("click", toggleRecording);
-$("#mediapush-create-btn").on("click", createMediaPush);
-// $("#mediapush-list-btn").on("click", listMediaPush);
-$("#mediapush-stop-btn").on("click", stopMediaPush);
+$("#mediapush-toggle-btn").on("click", toggleMediaPush);
+
 
 // Event handlers for layout views
 $("#grid-layout-btn").on("click", setGridLayout);
