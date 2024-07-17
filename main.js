@@ -59,7 +59,7 @@ const init_rtc = async (uid, token) => {
 };
 
 
-
+let isBackgroundApplied = false;
 
 const setupVirtualBackground = async () => {
   const extension = new VirtualBackgroundExtension();
@@ -75,20 +75,35 @@ const setupVirtualBackground = async () => {
   return processor;
 };
 
-// Add this function to handle background changes
 const changeBackground = async (processor, type, value) => {
   if (!processor) {
     console.error("Virtual Background processor is not initialized.");
     return;
   }
 
-  if (type === 'blur') {
-    await processor.setOptions({ type: 'blur', blurDegree: value });
-  } else if (type === 'color') {
-    await processor.setOptions({ type: 'color', color: value });
+  if (type === 'none') {
+    await processor.disable();
+    isBackgroundApplied = false;
+  } else {
+    if (type === 'blur') {
+      await processor.setOptions({ type: 'blur', blurDegree: value });
+    } else if (type === 'color') {
+      await processor.setOptions({ type: 'color', color: value });
+    }
+    await processor.enable();
+    isBackgroundApplied = true;
   }
 
-  await processor.enable();
+  updateChangeBackgroundButton();
+};
+
+const updateChangeBackgroundButton = () => {
+  const $btn = $("#change-bg-btn");
+  if (isBackgroundApplied) {
+    $btn.text("Remove Background");
+  } else {
+    $btn.text("Change Background");
+  }
 };
 
 
@@ -210,41 +225,13 @@ let joinAndDisplayLocalStream = async (uid, token) => {
     }
 
 
-
-
-    // // VIDEO BLUR START -----------================-------------=============---------==========---------========------=====
-
-    // let cloudToken = generate.authenticateCloud();
-
-    // // console.log(`CLOUD TOKEN START-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
-
-    // // console.log(cloudToken);
-    // // console.log(`CLOUD TOKEN END-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====-----------================-------------=============---------==========---------========------=====`);
-
-    // const extension = new VirtualBackgroundExtension();
-    // if (!extension.checkCompatibility()) {
-    //   // The current browser does not support the virtual background plugin, you can stop executing the subsequent logic
-    //   console.error("Does not support Virtual Background!");
-    // }
-    // // Register plugin
-    // AgoraRTC.registerExtensions([extension]);
-
-    // const processor = extension.createProcessor();
-
-    // await processor.init();
-
-    // localTracks[1].pipe(processor).pipe(localTracks[1].processorDestination);
-
-    // // processor.setOptions({type: 'blur', blurDegree: 2});
-    // processor.setOptions({ type: "color", color: "#00ff00" });
-
-    // await processor.enable();
-
-    // // VIDEO BLUR END -----------================-------------=============---------==========---------========------=====
-
-    // Add event listeners for the background change buttons
+    // Modify the change background button event listener
     $("#change-bg-btn").on("click", () => {
-      $("#bg-options").toggle();
+      if (isBackgroundApplied) {
+        changeBackground(virtualBgProcessor, 'none');
+      } else {
+        $("#bg-options").toggle();
+      }
     });
 
     $("#blur-bg-btn").on("click", () => {
@@ -274,6 +261,15 @@ let joinAndDisplayLocalStream = async (uid, token) => {
         $("#bg-options").hide();
       }
     });
+
+    // Initialize button text
+    updateChangeBackgroundButton();
+
+
+
+
+
+    // Background button handling end
 
     client.on("volume-indicator", (volumes) => {
       volumes.forEach((volume) => {
