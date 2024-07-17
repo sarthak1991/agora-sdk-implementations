@@ -26,10 +26,6 @@ let UID = "";
 
 let userUID = null
 
-let dataFromAcquire = {};
-let dataFromStartRecording = {};
-let dataFromStopRecording = {};
-
 let dataFromStreamCreate = null
 
 /**
