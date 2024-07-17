@@ -529,52 +529,87 @@ const toggleMediaPush = async (e) => {
 
 
 
-const mediaPullStart = async (e) => {
-  const region = CONSTANTS.rtmpRegion;
-const APPID = CONSTANTS.APPID;
-const InjectUrl = CONSTANTS.InjectUrl
-const AccessChannel = CONSTANTS.CHANNEL
-const CloudPlayerUID = generate.numericUID()
-const idleTimeout = 300;
+let isMediaPulling = false;
 
-const hostTokenForCloudPull = await generate.rtcToken(AccessChannel, CloudPlayerUID, "publisher")
+const toggleMediaPull = async (e) => {
+  const $button = $(e.target);
+  
+  const disableButton = () => {
+    $button.prop('disabled', true);
+    $button.css('opacity', '0.5');
+  };
 
-console.log("hostTokenForCloudPull");
-console.log(hostTokenForCloudPull);
+  const enableButton = () => {
+    $button.prop('disabled', false);
+    $button.css('opacity', '1');
+  };
 
-// return
+  const setButtonError = (message) => {
+    $button.text(`❌ ${message}`);
+    setTimeout(() => {
+      $button.text(isMediaPulling ? "Stop Media Pull" : "Start Media Pull");
+    }, 3000);
+  };
 
-try {
-  const data = await createCloudPlayer(
-    region,
-    APPID,
-    InjectUrl,
-    AccessChannel,
-    CloudPlayerUID,
-    hostTokenForCloudPull,
-    idleTimeout
-  );
+  disableButton();
 
-  dataFromMediaPull = data
-  console.log("Cloud player created:", data);
-} catch (error) {
-  console.error("Failed to create cloud player:", error);
-}
-}
+  if (!isMediaPulling) {
+    try {
+      const region = CONSTANTS.rtmpRegion;
+      const APPID = CONSTANTS.APPID;
+      const InjectUrl = CONSTANTS.InjectUrl;
+      const AccessChannel = CONSTANTS.CHANNEL;
+      const CloudPlayerUID = generate.numericUID();
+      const idleTimeout = 300;
+      const hostTokenForCloudPull = await generate.rtcToken(AccessChannel, CloudPlayerUID, "publisher");
+      
+      console.log("hostTokenForCloudPull", hostTokenForCloudPull);
 
-const mediaPullStop = async (e) => {
-  const region = CONSTANTS.rtmpRegion
-const APPID = CONSTANTS.APPID
-console.log(dataFromMediaPull.data.player.id);
-const id = dataFromMediaPull.data.player.id
+      const data = await createCloudPlayer(
+        region,
+        APPID,
+        InjectUrl,
+        AccessChannel,
+        CloudPlayerUID,
+        hostTokenForCloudPull,
+        idleTimeout
+      );
 
-try {
-  const result = await deleteCloudPlayer(region, APPID, id);
-  console.log("Cloud player deleted:", result);
-} catch (error) {
-  console.error("Failed to delete cloud player:", error);
-}
-}
+      dataFromMediaPull = data;
+      console.log("Cloud player created:", data);
+      
+      $button.text("Stop Media Pull");
+      $button.css("background-color", "#EE4B2B");
+      isMediaPulling = true;
+    } catch (error) {
+      console.error("Failed to create cloud player:", error);
+      setButtonError("Failed to start");
+    }
+  } else {
+    try {
+      if (dataFromMediaPull) {
+        const region = CONSTANTS.rtmpRegion;
+        const APPID = CONSTANTS.APPID;
+        const id = dataFromMediaPull.data.player.id;
+
+        const result = await deleteCloudPlayer(region, APPID, id);
+        console.log("Cloud player deleted:", result);
+      }
+      
+      $button.text("Start Media Pull");
+      $button.css("background-color", ""); // Reset to default color
+      isMediaPulling = false;
+      dataFromMediaPull = null;
+    } catch (error) {
+      console.error("Failed to delete cloud player:", error);
+      setButtonError("Failed to stop");
+    }
+  }
+
+  enableButton();
+};
+
+
 
 
 
@@ -592,8 +627,10 @@ $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
 $("#acquire-btn").on("click", toggleRecording);
 $("#mediapush-toggle-btn").on("click", toggleMediaPush);
-$("#mediapull-start-btn").on("click", mediaPullStart);
-$("#mediapull-stop-btn").on("click", mediaPullStop);
+$("#mediapull-toggle-btn").on("click", toggleMediaPull);
+
+// Gonna do some refactor
+
 
 
 // Event handlers for layout views
