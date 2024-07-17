@@ -161,11 +161,7 @@ export const stopWebRecording = async (
   return data;
 };
 
-const recording = {
-  acquire: acquireRecording,
-  startWebRecording,
-  stopWebRecording,
-};
+
 
 // ========================== WEB RECORDING BLOCK ENDS =================
 
@@ -333,42 +329,40 @@ export const deleteRtmpConverter = async (region, APPID, id) => {
 
 // ========================== MEDIA PULL BLOCK START ==================
 
-const createCloudPlayer = async (
-  region,
-  APPID,
-  InjectUrl,
-  AccessChannel,
-  CloudPlayerUID,
-  idleTimeout = 300
-) => {
-  const url = `https://api.agora.io/${region}/v1/projects/${APPID}/cloud-player/players`;
-
+export const createCloudPlayer = async (region, APPID, InjectUrl, AccessChannel, CloudPlayerUID, token, idleTimeout) => {
+  console.log("HIIIIII from inside create cloud player ie media pull");
+  
   const requestBody = {
     player: {
       streamUrl: InjectUrl,
       channelName: AccessChannel,
-      token: "",
+      token,
       uid: CloudPlayerUID,
-      // account: CloudPlayerStringUid, // Uncomment if needed
+      // account: "CloudPlayerStringUid", // Uncomment if needed
       idleTimeout: idleTimeout,
-      name: "test",
-    },
+      name: generate.uid()
+    }
   };
 
+  console.log(requestBody);
+
   try {
-    const response = await fetch(url, {
-      method: "POST",
+    const response = await fetch("http://localhost:8080/createMediaPull", {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
-    console.log("Cloud Player creation response:", data);
     return data;
   } catch (error) {
-    console.error("Error creating Cloud Player:", error);
+    console.error("Error creating cloud player:", error);
     throw error;
   }
 };
@@ -398,38 +392,32 @@ const deleteCloudPlayer = async (region, APPID, id) => {
   }
 };
 
-const listCloudPlayers = async (APPID) => {
-  const url = `https://api.agora.io/v1/projects/${APPID}/cloud-player/players`;
+// const listCloudPlayers = async (APPID) => {
+//   const url = `https://api.agora.io/v1/projects/${APPID}/cloud-player/players`;
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+//   try {
+//     const response = await fetch(url, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Cloud Players list:", data);
-      return data;
-    } else {
-      const errorData = await response.json();
-      console.error("Error fetching Cloud Players list:", errorData);
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching Cloud Players list:", error);
-    throw error;
-  }
-};
+//     if (response.ok) {
+//       const data = await response.json();
+//       console.log("Cloud Players list:", data);
+//       return data;
+//     } else {
+//       const errorData = await response.json();
+//       console.error("Error fetching Cloud Players list:", errorData);
+//       return null;
+//     }
+//   } catch (error) {
+//     console.error("Error fetching Cloud Players list:", error);
+//     throw error;
+//   }
+// };
 
-const mediaPull = {
-  create: createCloudPlayer,
-  delete: deleteCloudPlayer,
-  list: listCloudPlayers,
-};
 
 // ========================== MEDIA PULL BLOCK END ====================
 
-export default recording;

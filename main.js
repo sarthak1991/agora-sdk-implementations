@@ -11,7 +11,7 @@ import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter} from "./helpers/recordingControls"
+import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer} from "./helpers/recordingControls"
 import CONSTANTS from "./helpers/CONSTS";
 
 // eac91002da8b4caabfdde1753ad8dd90
@@ -528,6 +528,39 @@ const toggleMediaPush = async (e) => {
 
 
 
+const mediaPullStart = async (e) => {
+  const region = CONSTANTS.rtmpRegion;
+const APPID = CONSTANTS.APPID;
+const InjectUrl = CONSTANTS.InjectUrl
+const AccessChannel = CONSTANTS.CHANNEL
+const CloudPlayerUID = generate.numericUID()
+const idleTimeout = 300;
+
+const hostTokenForCloudPull = await generate.rtcToken(AccessChannel, CloudPlayerUID, "publisher")
+
+console.log("hostTokenForCloudPull");
+console.log(hostTokenForCloudPull);
+
+// return
+
+try {
+  const data = await createCloudPlayer(
+    region,
+    APPID,
+    InjectUrl,
+    AccessChannel,
+    CloudPlayerUID,
+    hostTokenForCloudPull,
+    idleTimeout
+  );
+  console.log("Cloud player created:", data);
+} catch (error) {
+  console.error("Failed to create cloud player:", error);
+}
+}
+
+
+
 
 
 // Placeholder functions for layout views
@@ -544,6 +577,8 @@ $("#mic-btn").on("click", toggleMic);
 $("#camera-btn").on("click", toggleCamera);
 $("#acquire-btn").on("click", toggleRecording);
 $("#mediapush-toggle-btn").on("click", toggleMediaPush);
+$("#mediapull-start-btn").on("click", mediaPullStart);
+// $("#mediapull-stop-btn").on("click", mediaPullStop);
 
 
 // Event handlers for layout views
