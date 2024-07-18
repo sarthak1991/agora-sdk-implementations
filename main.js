@@ -11,7 +11,7 @@ import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/recordingControls"
+import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/restfulControllers"
 import CONSTANTS from "./helpers/CONSTS";
 
 // eac91002da8b4caabfdde1753ad8dd90
@@ -127,6 +127,9 @@ const init_rtm = async (uid) => {
     );
   });
 
+  console.log("This is the type of RTM UID -=-=-=-=-=-=-=-=-=-=-=-=-");
+  console.log(typeof uid);
+
   let token = await generate.rtmToken(uid);
   await rtmClient.login({ uid, token });
   console.log(`rtm client login successful`);
@@ -184,11 +187,13 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     client.on("user-left", handleUserLeft);
 
+    let rtm_uid = uid.toString()
+
     const [UID, localTracks] = await init_rtc(uid, token);
     console.log(`This is the local tracks-=-=-=-=-`);
     console.log(localTracks);
     console.log(`This is the local tracks-=-=-=-=-`);
-    await init_rtm(uid);
+    await init_rtm(rtm_uid);
 
     // TEST-=-=-=-=-=-=-=-=-=-DENOISER START-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -325,7 +330,10 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 let joinStream = async (role) => {
   try {
     // generate UID and RTC token using custom logic written in ./helpers.generators.js | Split the logic into a different file to keep this file lean
-    let uid = generate.numericUID();
+    let stringUid = generate.numericUID();
+    let uid = Number(stringUid)
+    console.log("This is the type of UID -=-=-=-=-=-=-=-=-=-=-=-=-");
+    console.log(typeof uid);
     userUID = uid
     let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
@@ -351,25 +359,42 @@ let joinStream = async (role) => {
 
 let handleUserJoined = async (user, mediaType) => {
   remoteUsers[user.uid] = user;
-  await client.subscribe(user, mediaType);
-
-  if (mediaType === "video") {
-    let player = $(`#user-container-${user.uid}`);
-    if (player.length > 0) {
-      player.remove();
+  
+  try {
+    await client.subscribe(user, mediaType);
+    
+    if (mediaType === "video") {
+      if (user.videoTrack) {
+        let $player = $(`#user-container-${user.uid}`);
+        if ($player.length > 0) {
+          $player.remove();
+        }
+        
+        let $newPlayer = $(`<div class="video-container" id="user-container-${user.uid}">
+                              <div class="video-player" id="user-${user.uid}"></div>
+                              <div class="uid-label">${user.uid}</div>
+                            </div>`);
+        $("#video-call").append($newPlayer);
+        
+        user.videoTrack.play(`user-${user.uid}`);
+        console.log(`Remote user ${user.uid} video track played`);
+      } else {
+        console.warn(`Remote user ${user.uid} video track is not available`);
+      }
     }
-
-    player = `<div class="video-container" id="user-container-${user.uid}">
-                        <div class="video-player" id="user-${user.uid}"></div>
-                        <div class="uid-label">${user.uid}</div> 
-                 </div>`;
-    $("#video-call").append(player);
-
-    user.videoTrack.play(`user-${user.uid}`);
-  }
-
-  if (mediaType === "audio") {
-    user.audioTrack.play();
+    
+    if (mediaType === "audio") {
+      if (user.audioTrack) {
+        user.audioTrack.play();
+        console.log(`Remote user ${user.uid} audio track played`);
+      } else {
+        console.warn(`Remote user ${user.uid} audio track is not available`);
+      }
+    }
+    
+    console.log(`Successfully subscribed to ${mediaType} track of user ${user.uid}`);
+  } catch (error) {
+    console.error(`Error handling ${mediaType} track of user ${user.uid}:`, error);
   }
 };
 
@@ -557,8 +582,21 @@ const toggleMediaPush = async (e) => {
   if (!isMediaPushing) {
     try {
       const ImageUID = Number(userUID);
-      const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "audience");
+      console.log("This is the type of IMAGEUID -=-=-=-=-=-=-=-=-=-=-=-=-");
+      console.log(typeof ImageUID);
+      const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "publisher");
       const streamName = generate.uid();
+
+      console.log("======------------------==============-------------=========------");
+
+      console.log("ImageUID");
+      console.log(ImageUID);
+      console.log("rtcToken");
+      console.log(rtcToken);
+      console.log("streamName");
+      console.log(streamName);
+
+      // return
 
       const data = await createRtmpConverter(
         streamName,

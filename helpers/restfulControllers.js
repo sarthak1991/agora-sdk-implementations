@@ -194,7 +194,7 @@ export const createRtmpConverter = async (
         },
         videoOptions: {
           canvas: {
-            width: 960,
+            width: 1280,
             height: 720,
           },
           layout: [
@@ -204,7 +204,7 @@ export const createRtmpConverter = async (
                 xPos: 0,
                 yPos: 0,
                 zIndex: 1,
-                width: 480,
+                width: 640,
                 height: 720,
               },
               fillMode: "fill",
@@ -213,9 +213,9 @@ export const createRtmpConverter = async (
             },
           ],
           codecProfile: "main",
-          frameRate: 15,
-          gop: 30,
-          bitrate: 910,
+          frameRate: 30,
+          gop: 60,
+          bitrate: 2500,
         },
       },
       rtmpUrl: RTMPUrl,
