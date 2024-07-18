@@ -104,11 +104,11 @@ export const startWebRecording = async (
         avFileType: ["hls", "mp4"],
       },
       storageConfig: {
-        vendor: 2,
-        region: 7,
+        vendor: 1,
+        region: 14,
         bucket: "agoracloudrecordingdemo",
-        accessKey: "SAKIA6GBMGYVGU2TPYZHNNO",
-        secretKey: "BmByDu4t3/mxxvheOLlhO0BDkKmQxYBPoxMyIXtKdNO",
+        accessKey: "AKIA6GBMGYVGU2TPYZHN",
+        secretKey: "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",
       },
     },
   };
