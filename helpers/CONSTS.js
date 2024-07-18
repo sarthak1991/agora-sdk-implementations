@@ -7,7 +7,8 @@ const CONSTANTS = {
   rtcToken: "007eJxTYPiztstGb7qI2K71eefjPXRutWVOMnYXZjr744/INJc7Zt0KDAZpaakGKeYmFqnJFiYmhkaWFkYmqUbGJklGxsbJKcmWS4OmpjUEMjLc1PdmYmSAQBCflaG4qCQjm4EBADXmHwM=",
   rtmpRegion: "ap",
   RTMPUrl: "rtmp://a.rtmp.youtube.com/live2/u9p5-f6mk-1ytk-tbpm-e24w",
-  InjectUrl:"http://content.jwplatform.com/manifests/vM7nH0Kl.m3u8"
+  InjectUrl:"http://content.jwplatform.com/manifests/vM7nH0Kl.m3u8",
+  expiry:300
 };
 
 export default CONSTANTS;

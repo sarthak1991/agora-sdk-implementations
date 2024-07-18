@@ -4,6 +4,7 @@ import CONSTANTS from "./CONSTS";
 // This is my own custom node backend hosting the Agora Token Service. It is secured with SSL (https)
 
 const TOKEN_SERVER_URL = "https://reactdelhi.com";
+const local_token_server = "http://localhost:8080"
 
 const generateUID = () => {
   const characters =
@@ -26,11 +27,11 @@ const numericUID = () => {
 
 
 // Generate RTC Token
-const generateRTCToken = async (CHANNEL, uid, role) => {
+const generateRTCToken = async (CHANNEL, uid, role, expiry = 300) => {
   console.log(`Inside Generate RTC Token`);
   try {
     let response = await fetch(
-      `${TOKEN_SERVER_URL}/rtc/${CHANNEL}/${role}/uid/${uid}`
+      `${TOKEN_SERVER_URL}/rtc/${CHANNEL}/${role}/uid/${uid}?expiry=${CONSTANTS.expiry}`
     );
     let data = await response.json();
     let token = data.rtcToken;
