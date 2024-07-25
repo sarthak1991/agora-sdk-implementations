@@ -6,13 +6,20 @@ import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 
-
 import { AIDenoiserExtension } from "agora-extension-ai-denoiser";
 import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/restfulControllers"
+import {
+  acquireRecording,
+  startWebRecording,
+  stopWebRecording,
+  createRtmpConverter,
+  deleteRtmpConverter,
+  createCloudPlayer,
+  deleteCloudPlayer,
+} from "./helpers/restfulControllers";
 import CONSTANTS from "./helpers/CONSTS";
 
 // eac91002da8b4caabfdde1753ad8dd90
@@ -25,10 +32,10 @@ let localTracks = [];
 let remoteUsers = {};
 let UID = "";
 
-let userUID = null
+let userUID = null;
 
-let dataFromStreamCreate = null
-let dataFromMediaPull = null
+let dataFromStreamCreate = null;
+let dataFromMediaPull = null;
 
 /**
  * Step 0
@@ -59,7 +66,6 @@ const init_rtc = async (uid, token) => {
   return [UID, localTracks];
 };
 
-
 let isBackgroundApplied = false;
 
 const setupVirtualBackground = async () => {
@@ -82,14 +88,14 @@ const changeBackground = async (processor, type, value) => {
     return;
   }
 
-  if (type === 'none') {
+  if (type === "none") {
     await processor.disable();
     isBackgroundApplied = false;
   } else {
-    if (type === 'blur') {
-      await processor.setOptions({ type: 'blur', blurDegree: value });
-    } else if (type === 'color') {
-      await processor.setOptions({ type: 'color', color: value });
+    if (type === "blur") {
+      await processor.setOptions({ type: "blur", blurDegree: value });
+    } else if (type === "color") {
+      await processor.setOptions({ type: "color", color: value });
     }
     await processor.enable();
     isBackgroundApplied = true;
@@ -106,10 +112,6 @@ const updateChangeBackgroundButton = () => {
     $btn.text("Change Background");
   }
 };
-
-
-
-
 
 /**
  * Step 3.2:
@@ -192,7 +194,7 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     $("#screen-share-btn").on("click", toggleScreenShare);
 
-    let rtm_uid = uid.toString()
+    let rtm_uid = uid.toString();
 
     const [UID, localTracks] = await init_rtc(uid, token);
     console.log(`This is the local tracks-=-=-=-=-`);
@@ -226,39 +228,38 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     // TEST-=-=-=-=-=-=-=-=-=-DENOISER END -=-=-=-=-=-=-=-=-=-=-=-=-
 
-
-
     const virtualBgProcessor = await setupVirtualBackground();
 
     if (virtualBgProcessor) {
-      localTracks[1].pipe(virtualBgProcessor).pipe(localTracks[1].processorDestination);
+      localTracks[1]
+        .pipe(virtualBgProcessor)
+        .pipe(localTracks[1].processorDestination);
     }
-
 
     // Modify the change background button event listener
     $("#change-bg-btn").on("click", () => {
       if (isBackgroundApplied) {
-        changeBackground(virtualBgProcessor, 'none');
+        changeBackground(virtualBgProcessor, "none");
       } else {
         $("#bg-options").toggle();
       }
     });
 
     $("#blur-bg-btn").on("click", () => {
-      changeBackground(virtualBgProcessor, 'blur', 2);
+      changeBackground(virtualBgProcessor, "blur", 2);
       $("#bg-options").hide();
     });
 
     // Modified color picker event handling
     $("#color-picker").on("input", (e) => {
       const color = e.target.value;
-      changeBackground(virtualBgProcessor, 'color', color);
+      changeBackground(virtualBgProcessor, "color", color);
     });
 
     $("#color-picker-form").on("submit", (e) => {
       e.preventDefault();
       const color = $("#color-picker").val();
-      changeBackground(virtualBgProcessor, 'color', color);
+      changeBackground(virtualBgProcessor, "color", color);
       $("#bg-options").hide();
     });
 
@@ -267,17 +268,13 @@ let joinAndDisplayLocalStream = async (uid, token) => {
       if (e.key === "Enter") {
         e.preventDefault();
         const color = e.target.value;
-        changeBackground(virtualBgProcessor, 'color', color);
+        changeBackground(virtualBgProcessor, "color", color);
         $("#bg-options").hide();
       }
     });
 
     // Initialize button text
     updateChangeBackgroundButton();
-
-
-
-
 
     // Background button handling end
 
@@ -336,10 +333,10 @@ let joinStream = async (role) => {
   try {
     // generate UID and RTC token using custom logic written in ./helpers.generators.js | Split the logic into a different file to keep this file lean
     let stringUid = generate.numericUID();
-    let uid = Number(stringUid)
+    let uid = Number(stringUid);
     console.log("This is the type of UID -=-=-=-=-=-=-=-=-=-=-=-=-");
     console.log(typeof uid);
-    userUID = uid
+    userUID = uid;
     let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
     $("#screen-share-btn").show();
@@ -366,31 +363,31 @@ let joinStream = async (role) => {
 
 let handleUserJoined = async (user, mediaType) => {
   remoteUsers[user.uid] = user;
-  
+
   try {
     await client.subscribe(user, mediaType);
-    
-    
+
     if (mediaType === "video") {
       if (user.videoTrack) {
         let $player = $(`#user-container-${user.uid}`);
         if ($player.length > 0) {
           $player.remove();
         }
-        
-        let $newPlayer = $(`<div class="video-container" id="user-container-${user.uid}">
+
+        let $newPlayer =
+          $(`<div class="video-container" id="user-container-${user.uid}">
                               <div class="video-player" id="user-${user.uid}"></div>
                               <div class="uid-label">${user.uid}</div>
                             </div>`);
         $("#video-call").append($newPlayer);
-        
+
         user.videoTrack.play(`user-${user.uid}`);
         console.log(`Remote user ${user.uid} video track played`);
       } else {
         console.warn(`Remote user ${user.uid} video track is not available`);
       }
     }
-    
+
     if (mediaType === "audio") {
       if (user.audioTrack) {
         user.audioTrack.play();
@@ -399,10 +396,15 @@ let handleUserJoined = async (user, mediaType) => {
         console.warn(`Remote user ${user.uid} audio track is not available`);
       }
     }
-    
-    console.log(`Successfully subscribed to ${mediaType} track of user ${user.uid}`);
+
+    console.log(
+      `Successfully subscribed to ${mediaType} track of user ${user.uid}`
+    );
   } catch (error) {
-    console.error(`Error handling ${mediaType} track of user ${user.uid}:`, error);
+    console.error(
+      `Error handling ${mediaType} track of user ${user.uid}:`,
+      error
+    );
   }
 };
 
@@ -411,11 +413,11 @@ let handleUserLeft = async (user) => {
   $(`#user-container-${user.uid}`).remove();
 };
 
-const onStreamMessage = async(uid, stream)=> {
+const onStreamMessage = async (uid, stream) => {
   // if (uid != {pusher bot uid}) {
   console.log(uid);
-    return;
-}
+  return;
+};
 
 let leaveAndRemoveLocalStream = async () => {
   for (let i = 0; localTracks.length > i; i++) {
@@ -498,15 +500,15 @@ let acquisitionData = null;
 
 const toggleRecording = async (e) => {
   const $button = $(e.target);
-  
+
   const disableButton = () => {
-    $button.prop('disabled', true);
-    $button.css('opacity', '0.5');
+    $button.prop("disabled", true);
+    $button.css("opacity", "0.5");
   };
 
   const enableButton = () => {
-    $button.prop('disabled', false);
-    $button.css('opacity', '1');
+    $button.prop("disabled", false);
+    $button.css("opacity", "1");
   };
 
   const setButtonError = (message) => {
@@ -531,7 +533,11 @@ const toggleRecording = async (e) => {
         acquisitionData = { ...data, recordingUID };
         console.log("acquisitionData", acquisitionData);
 
-        const recordingClientToken = await generate.rtcToken(CONSTANTS.CHANNEL, acquisitionData.uid, "audience");
+        const recordingClientToken = await generate.rtcToken(
+          CONSTANTS.CHANNEL,
+          acquisitionData.uid,
+          "audience"
+        );
         recordingData = await startWebRecording(
           CONSTANTS.APPID,
           data.resourceId,
@@ -548,7 +554,10 @@ const toggleRecording = async (e) => {
         setButtonError("Signal failed");
       }
     } catch (error) {
-      console.error("Error in signal acquisition or starting recording:", error);
+      console.error(
+        "Error in signal acquisition or starting recording:",
+        error
+      );
       setButtonError("Error occurred");
     }
   } else {
@@ -579,15 +588,15 @@ let isMediaPushing = false;
 
 const toggleMediaPush = async (e) => {
   const $button = $(e.target);
-  
+
   const disableButton = () => {
-    $button.prop('disabled', true);
-    $button.css('opacity', '0.5');
+    $button.prop("disabled", true);
+    $button.css("opacity", "0.5");
   };
 
   const enableButton = () => {
-    $button.prop('disabled', false);
-    $button.css('opacity', '1');
+    $button.prop("disabled", false);
+    $button.css("opacity", "1");
   };
 
   const setButtonError = (message) => {
@@ -604,10 +613,16 @@ const toggleMediaPush = async (e) => {
       const ImageUID = Number(userUID);
       console.log("This is the type of IMAGEUID -=-=-=-=-=-=-=-=-=-=-=-=-");
       console.log(typeof ImageUID);
-      const rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, ImageUID, "publisher");
+      const rtcToken = await generate.rtcToken(
+        CONSTANTS.CHANNEL,
+        ImageUID,
+        "publisher"
+      );
       const streamName = generate.uid();
 
-      console.log("======------------------==============-------------=========------");
+      console.log(
+        "======------------------==============-------------=========------"
+      );
 
       console.log("ImageUID");
       console.log(ImageUID);
@@ -630,7 +645,7 @@ const toggleMediaPush = async (e) => {
 
       console.log("RTMP converter created:", data);
       dataFromStreamCreate = data;
-      
+
       $button.text("Stop Media Push");
       $button.css("background-color", "#EE4B2B");
       isMediaPushing = true;
@@ -648,7 +663,7 @@ const toggleMediaPush = async (e) => {
         );
         console.log("RTMP converter deleted:", result);
       }
-      
+
       $button.text("Start Media Push");
       $button.css("background-color", ""); // Reset to default color
       isMediaPushing = false;
@@ -662,21 +677,19 @@ const toggleMediaPush = async (e) => {
   enableButton();
 };
 
-
-
 let isMediaPulling = false;
 
 const toggleMediaPull = async (e) => {
   const $button = $(e.target);
-  
+
   const disableButton = () => {
-    $button.prop('disabled', true);
-    $button.css('opacity', '0.5');
+    $button.prop("disabled", true);
+    $button.css("opacity", "0.5");
   };
 
   const enableButton = () => {
-    $button.prop('disabled', false);
-    $button.css('opacity', '1');
+    $button.prop("disabled", false);
+    $button.css("opacity", "1");
   };
 
   const setButtonError = (message) => {
@@ -696,8 +709,12 @@ const toggleMediaPull = async (e) => {
       const AccessChannel = CONSTANTS.CHANNEL;
       const CloudPlayerUID = generate.numericUID();
       const idleTimeout = 300;
-      const hostTokenForCloudPull = await generate.rtcToken(AccessChannel, CloudPlayerUID, "publisher");
-      
+      const hostTokenForCloudPull = await generate.rtcToken(
+        AccessChannel,
+        CloudPlayerUID,
+        "publisher"
+      );
+
       console.log("hostTokenForCloudPull", hostTokenForCloudPull);
 
       const data = await createCloudPlayer(
@@ -712,7 +729,7 @@ const toggleMediaPull = async (e) => {
 
       dataFromMediaPull = data;
       console.log("Cloud player created:", data);
-      
+
       $button.text("Stop Media Pull");
       $button.css("background-color", "#EE4B2B");
       isMediaPulling = true;
@@ -730,7 +747,7 @@ const toggleMediaPull = async (e) => {
         const result = await deleteCloudPlayer(region, APPID, id);
         console.log("Cloud player deleted:", result);
       }
-      
+
       $button.text("Start Media Pull");
       $button.css("background-color", ""); // Reset to default color
       isMediaPulling = false;
@@ -744,7 +761,6 @@ const toggleMediaPull = async (e) => {
   enableButton();
 };
 
-
 let screenTrack;
 
 const toggleScreenShare = async () => {
@@ -754,12 +770,12 @@ const toggleScreenShare = async () => {
       screenTrack = await AgoraRTC.createScreenVideoTrack();
       await client.unpublish(localTracks[1]); // Unpublish camera track
       await client.publish(screenTrack);
-      
+
       // Replace camera video with screen share
       const playerContainer = $(`#user-container-${UID}`);
-      playerContainer.find('.video-player').empty();
+      playerContainer.find(".video-player").empty();
       screenTrack.play(`user-${UID}`);
-      
+
       $("#screen-share-btn").text("Stop Sharing");
     } catch (error) {
       console.error("Error starting screen share:", error);
@@ -771,18 +787,14 @@ const toggleScreenShare = async () => {
     screenTrack.stop();
     screenTrack.close();
     screenTrack = null;
-    
+
     // Republish camera track
     await client.publish(localTracks[1]);
     localTracks[1].play(`user-${UID}`);
-    
+
     $("#screen-share-btn").text("Share Screen");
   }
 };
-
-
-
-
 
 // Placeholder functions for layout views
 let setGridLayout = () => {
@@ -801,8 +813,6 @@ $("#mediapush-toggle-btn").on("click", toggleMediaPush);
 $("#mediapull-toggle-btn").on("click", toggleMediaPull);
 
 // Gonna do some refactor
-
-
 
 // Event handlers for layout views
 $("#grid-layout-btn").on("click", setGridLayout);

@@ -5,10 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Sarthak Agora Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'wasm-unsafe-eval' blob:">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' 'wasm-unsafe-eval' blob:"
+    />
     <link rel="stylesheet" type="text/css" media="screen" href="./style.css" />
     <script src="./agora-extension-virtual-background.js"></script>
-
   </head>
   <body>
     <!-- 
@@ -81,31 +83,39 @@
           Camera on
         </button>
 
-
         <button id="acquire-btn" class="btn-normal stream-control-button">
           Start Recording
         </button>
 
-
-        <button id="mediapush-toggle-btn" class="btn-normal stream-control-button">Start Streaming</button>
+        <button
+          id="mediapush-toggle-btn"
+          class="btn-normal stream-control-button"
+        >
+          Start Streaming
+        </button>
 
         <!-- <button id="mediapull-start-btn" class="btn-normal stream-control-button">Start Pulling Media</button>
         <button id="mediapull-stop-btn" class="btn-normal stream-control-button">Stop Pulling Media</button> -->
 
-        <button id="mediapull-toggle-btn" class="btn-normal stream-control-button" >Start Media Pull</button>
+        <button
+          id="mediapull-toggle-btn"
+          class="btn-normal stream-control-button"
+        >
+          Start Media Pull
+        </button>
 
-        <button id="screen-share-btn" class="btn-normal stream-control-button">Share Screen</button>
-
+        <button id="screen-share-btn" class="btn-normal stream-control-button">
+          Share Screen
+        </button>
 
         <button id="change-bg-btn">Change Background</button>
-        <div id="bg-options" style="display: none;">
+        <div id="bg-options" style="display: none">
           <button id="blur-bg-btn">Blur</button>
           <form id="color-picker-form">
-            <input type="color" id="color-picker" value="#00ff00">
+            <input type="color" id="color-picker" value="#00ff00" />
           </form>
         </div>
 
-        
         <!-- 
           PLEASE NOTE: Deliberately not using a form and using a div here instead at (chat-container) as form submission with reload the page.
          -->
