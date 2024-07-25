@@ -6,6 +6,7 @@ import $ from "jquery";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import AgoraRTM from "agora-rtm-sdk";
 
+
 import { AIDenoiserExtension } from "agora-extension-ai-denoiser";
 import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
@@ -187,6 +188,10 @@ let joinAndDisplayLocalStream = async (uid, token) => {
 
     client.on("user-left", handleUserLeft);
 
+    client.on("stream-message", onStreamMessage);
+
+    $("#screen-share-btn").on("click", toggleScreenShare);
+
     let rtm_uid = uid.toString()
 
     const [UID, localTracks] = await init_rtc(uid, token);
@@ -337,6 +342,8 @@ let joinStream = async (role) => {
     userUID = uid
     let rtcToken = await generate.rtcToken(CONSTANTS.CHANNEL, uid, role);
 
+    $("#screen-share-btn").show();
+
     console.log(`rtcToken --> `, rtcToken);
     console.log("UID", uid);
 
@@ -362,6 +369,7 @@ let handleUserJoined = async (user, mediaType) => {
   
   try {
     await client.subscribe(user, mediaType);
+    
     
     if (mediaType === "video") {
       if (user.videoTrack) {
@@ -403,10 +411,22 @@ let handleUserLeft = async (user) => {
   $(`#user-container-${user.uid}`).remove();
 };
 
+const onStreamMessage = async(uid, stream)=> {
+  // if (uid != {pusher bot uid}) {
+  console.log(uid);
+    return;
+}
+
 let leaveAndRemoveLocalStream = async () => {
   for (let i = 0; localTracks.length > i; i++) {
     localTracks[i].stop();
     localTracks[i].close();
+  }
+
+  if (screenTrack) {
+    screenTrack.stop();
+    screenTrack.close();
+    screenTrack = null;
   }
 
   await client.leave();
@@ -722,6 +742,42 @@ const toggleMediaPull = async (e) => {
   }
 
   enableButton();
+};
+
+
+let screenTrack;
+
+const toggleScreenShare = async () => {
+  if (!screenTrack) {
+    // Start screen sharing
+    try {
+      screenTrack = await AgoraRTC.createScreenVideoTrack();
+      await client.unpublish(localTracks[1]); // Unpublish camera track
+      await client.publish(screenTrack);
+      
+      // Replace camera video with screen share
+      const playerContainer = $(`#user-container-${UID}`);
+      playerContainer.find('.video-player').empty();
+      screenTrack.play(`user-${UID}`);
+      
+      $("#screen-share-btn").text("Stop Sharing");
+    } catch (error) {
+      console.error("Error starting screen share:", error);
+      screenTrack = null;
+    }
+  } else {
+    // Stop screen sharing
+    await client.unpublish(screenTrack);
+    screenTrack.stop();
+    screenTrack.close();
+    screenTrack = null;
+    
+    // Republish camera track
+    await client.publish(localTracks[1]);
+    localTracks[1].play(`user-${UID}`);
+    
+    $("#screen-share-btn").text("Share Screen");
+  }
 };
 
 

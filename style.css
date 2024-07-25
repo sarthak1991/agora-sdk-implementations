@@ -88,3 +88,7 @@ html, body {
 #stop-record-btn{
   display: none;
 }
+
+#screen-share-btn {
+  display: none;
+}
