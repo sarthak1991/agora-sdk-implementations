@@ -830,6 +830,90 @@ document.addEventListener('keydown', async (event) => {
 
 
 
+
+// Spotlight search functionality
+let isSpotlightOpen = false;
+
+document.addEventListener('keydown', (event) => {
+  // Check for Command+K (Mac) or Ctrl+K (Windows)
+  if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+    event.preventDefault();
+    toggleSpotlight();
+  }
+});
+
+function toggleSpotlight() {
+  const spotlightContainer = document.getElementById('spotlight-container');
+  const spotlightInput = document.getElementById('spotlight-input');
+  
+  if (isSpotlightOpen) {
+    spotlightContainer.style.display = 'none';
+  } else {
+    spotlightContainer.style.display = 'flex';
+    spotlightInput.focus();
+  }
+  
+  isSpotlightOpen = !isSpotlightOpen;
+}
+
+document.getElementById('spotlight-input').addEventListener('input', filterSpotlightResults);
+
+function filterSpotlightResults() {
+  const input = document.getElementById('spotlight-input');
+  const filter = input.value.toLowerCase();
+  const items = document.getElementsByClassName('spotlight-item');
+
+  for (let i = 0; i < items.length; i++) {
+    const text = items[i].textContent.toLowerCase();
+    if (text.includes(filter)) {
+      items[i].style.display = '';
+    } else {
+      items[i].style.display = 'none';
+    }
+  }
+}
+
+document.getElementById('spotlight-results').addEventListener('click', (event) => {
+  if (event.target.classList.contains('spotlight-item')) {
+    const shortcut = event.target.getAttribute('data-shortcut');
+    triggerShortcut(shortcut);
+    toggleSpotlight();
+  }
+});
+
+function triggerShortcut(shortcut) {
+  switch (shortcut) {
+    case 'm':
+      toggleMic({ target: $('#mic-btn')[0] });
+      break;
+    case 'c':
+      toggleCamera({ target: $('#camera-btn')[0] });
+      break;
+    case 'escape':
+      leaveAndRemoveLocalStream();
+      break;
+  }
+}
+
+// Close spotlight when clicking outside
+document.getElementById('spotlight-container').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) {
+    toggleSpotlight();
+  }
+});
+
+// Prevent closing spotlight when clicking inside the search box
+document.getElementById('spotlight-search').addEventListener('click', (event) => {
+  event.stopPropagation();
+});
+
+
+
+
+
+
+
+
 // Gonna do some refactor
 
 // Event handlers for layout views
