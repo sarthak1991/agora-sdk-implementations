@@ -812,6 +812,24 @@ $("#acquire-btn").on("click", toggleRecording);
 $("#mediapush-toggle-btn").on("click", toggleMediaPush);
 $("#mediapull-toggle-btn").on("click", toggleMediaPull);
 
+
+
+// Keyboard shortcuts
+document.addEventListener('keydown', async (event) => {
+  if (event.key === 'm' || event.key === 'M') {
+    // Toggle microphone
+    await toggleMic({ target: $('#mic-btn')[0] });
+  } else if (event.key === 'c' || event.key === 'C') {
+    // Toggle camera
+    await toggleCamera({ target: $('#camera-btn')[0] });
+  } else if (event.key === 'Escape') {
+    // Leave call
+    await leaveAndRemoveLocalStream();
+  }
+});
+
+
+
 // Gonna do some refactor
 
 // Event handlers for layout views
@@ -831,3 +849,5 @@ $("#join-as-host-btn").on("click", async () => {
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
 });
+
+
