@@ -15,6 +15,14 @@ import generate from "./helpers/generators";
 import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/restfulControllers"
 import CONSTANTS from "./helpers/CONSTS";
 
+
+
+import protobuf  from './compiled.js';
+
+
+
+
+
 // eac91002da8b4caabfdde1753ad8dd90
 
 // Later: It wasn't in the requirements but allow user to enter his channel of choice as we are using cutom tokens using our own token generator serviced by our own HTTPS Enabled NodeJS Server.
@@ -417,14 +425,19 @@ let handleUserLeft = async (user) => {
   $(`#user-container-${user.uid}`).remove();
 };
 
-const onStreamMessage = async(uid, stream)=> {
-  // if (uid != {pusher bot uid}) {
-    console.log("This is coming from the stream messages function that is activated when we go for transcription. -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    console.log(uid);
-    console.log(stream);
-    console.log("This is coming from the stream messages function that is activated when we go for transcription. -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-    return;
-}
+const onStreamMessage = async(uid, payload)=>  {
+  console.info(`Received data stream message from ${uid}: `, payload);
+  try {
+  const TextMessage = protobuf.agora.audio2text.Text;
+  const textMessage = TextMessage.decode(new Uint8Array(payload));
+  console.log('textMessage_stt:', textMessage);
+  textMessage.words.forEach(word => {
+  console.log('Word:', word.text);
+  });
+  } catch (err) {
+  console.error('Failed to decode message:', err);
+  }
+  }
 
 let leaveAndRemoveLocalStream = async () => {
   for (let i = 0; localTracks.length > i; i++) {
