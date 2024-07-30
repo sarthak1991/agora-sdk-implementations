@@ -36,7 +36,7 @@ let dataFromMediaPull = null
  * - Enable Volume Indicators from the client (Used in checking for active speaker)
  */
 const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
-
+client.setClientRole("host")
 // const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
 // Example of geo-restricting the app.
@@ -55,7 +55,7 @@ const init_rtc = async (uid, token) => {
     // join the channel
     client.join(CONSTANTS.APPID, CONSTANTS.CHANNEL, token, uid),
     // create local tracks, using microphone and camera
-    AgoraRTC.createMicrophoneAndCameraTracks(),
+    // AgoraRTC.createMicrophoneAndCameraTracks(),
   ]);
   return [UID, localTracks];
 };
@@ -353,7 +353,7 @@ let joinStream = async (role) => {
     console.log("UID", uid);
 
     console.log("Clicked join stream");
-    client.setClientRole("host")
+client.setClientRole("audience")
     await joinAndDisplayLocalStream(uid, rtcToken);
 
     console.log("Have we reached here? ");
@@ -389,8 +389,10 @@ let handleUserJoined = async (user, mediaType) => {
                               <div class="uid-label">${user.uid}</div>
                             </div>`);
         $("#video-call").append($newPlayer);
+
         
         user.videoTrack.play(`user-${user.uid}`);
+
         console.log(`Remote user ${user.uid} video track played`);
       } else {
         console.warn(`Remote user ${user.uid} video track is not available`);
@@ -824,9 +826,9 @@ $("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
  * - Next Step --> joinStream()
  */
 $("#join-as-host-btn").on("click", async () => {
+  await joinStream("publisher");
 });
-await joinStream("publisher");
 
 $("#join-as-audience-btn").on("click", async () => {
-  await joinStream("audience");
 });
+await joinStream("audience");
