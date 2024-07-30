@@ -823,18 +823,11 @@ $("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
  * - Join the user to the stream
  * - Next Step --> joinStream()
  */
-// $("#join-as-host-btn").on("click", async () => {
-// });
-// await joinStream("publisher");
+$("#join-as-host-btn").on("click", async () => {
+});
+joinStream("publisher");
 
 $("#join-as-audience-btn").on("click", async () => {
   await joinStream("audience");
 });
 
-
-const runAtStart = async () => {
-
-  await joinStream("host");
-}
-
-runAtStart()

@@ -831,10 +831,4 @@ $("#join-as-host-btn").on("click", async () => {
 
 $("#join-as-audience-btn").on("click", async () => {
 });
-
-const runAtStart = async () => {
-
-  await joinStream("audience");
-}
-
-runAtStart()
+joinStream("audience");
