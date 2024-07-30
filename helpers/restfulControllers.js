@@ -117,7 +117,7 @@ export const startWebRecording = async (
 
   // do NOT uncomment lines 1-5 until you are ready to record.
 
-  const response = await fetchResults(local_token_server, requestBody);
+  const response = await fetchResults(webRecordingUrl, requestBody);
 
   const data = await response.json();
 
