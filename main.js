@@ -953,6 +953,7 @@ initializeSubtitles();
  * - Next Step --> joinStream()
  */
 $("#join-as-host-btn").on("click", async () => {
+  joinStream("publisher");
 });
 joinStream("publisher");
 
