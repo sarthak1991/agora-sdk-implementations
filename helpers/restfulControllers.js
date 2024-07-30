@@ -91,7 +91,7 @@ export const startWebRecording = async (
             serviceName: "web_recorder_service",
             errorHandlePolicy: "error_abort",
             serviceParam: {
-              url: "https://agora-augustdemo-bysarthak.netlify.app/",
+              url: "https://agora-augustdemo-bysarthak.netlify.app/audience.html",
               audioProfile: 0,
               videoWidth: 1280,
               videoHeight: 720,
