@@ -92,3 +92,21 @@ html, body {
 #screen-share-btn {
   display: none;
 }
+
+#subtitle-container {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 800px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px;
+  font-size: 18px;
+  z-index: 1000;
+  border-radius: 5px;
+  pointer-events: none;
+}
+

@@ -98,6 +98,13 @@ const createLiveStream = async (name, region, APPID, AccessChannel, ImageUID, RT
   }
 };
 
+const instanceID = () => {
+
+  const randomSevenDigitNumber = (Math.floor(Math.random() * 10000000)).toString();
+
+  return randomSevenDigitNumber;
+};
+
 // Exporting all the generator functions inside a single variable called generate. Enhances the readability!
 const generate = {
   uid: generateUID,
@@ -105,7 +112,8 @@ const generate = {
   rtmToken: generateRTMToken,
   authenticateCloud: generateAuthorizationCredentialForCloudRecording,
   numericUID, 
-  createLiveStream
+  createLiveStream, 
+  instanceID
 };
 
 export default generate;

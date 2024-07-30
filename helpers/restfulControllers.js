@@ -10,7 +10,7 @@ const local_token_server = "http://localhost:8080"
 
 // console.log(bearerToken);
 
-const fetchResults = async (URL, requestBody, method = CONSTANTS.METHOD) => {
+const fetchResults = async (URL, requestBody=null, method = CONSTANTS.METHOD) => {
   const body = JSON.stringify(requestBody);
 
   const options = {
@@ -435,3 +435,121 @@ export const deleteCloudPlayer = async (region, APPID, id) => {
 
 // ========================== MEDIA PULL BLOCK END ====================
 
+
+
+
+
+export const acquireRTS = async(instanceid)=> {
+
+  let APPID = CONSTANTS.APPID
+
+  const acquireURL = `https://api.agora.io/v1/projects/${APPID}/rtsc/speech-to-text/builderTokens`;
+
+  const requestBody = {
+    instanceId: instanceid
+}
+
+const response = await fetchResults(acquireURL, requestBody);
+
+const data = await response.json();
+
+console.log("data==> ", data);
+
+let acquired = response.status == 200 ? true : false;
+
+console.log("acquired==> ", acquired);
+return data;
+
+}
+
+
+
+export const startRTS = async(APPID, builderToken, AccessChannel, subBotUid, subBotToken, pubBotUid, pubBotToken, accessKey, secretKey, bucket, vendor, region)=> {
+
+
+  const URL = `https://api.agora.io/v1/projects/${APPID}/rtsc/speech-to-text/tasks?builderToken=${builderToken}`;
+
+  const requestBody = {
+    languages: [
+        "en-US"
+    ],
+    maxIdleTime: 60,
+    rtcConfig: {
+        channelName: AccessChannel,
+        subBotUid,
+        subBotToken,
+        pubBotUid,
+        pubBotToken
+    },
+    captionConfig: {
+        storage: {
+            accessKey,
+            secretKey,
+            bucket,
+            vendor,
+            region,
+            "fileNamePrefix":[
+                "arun94"
+            ]
+        }
+    },
+    "translateConfig": {
+        "forceTranslateInterval": 5,
+        "languages": [
+            {
+                "source": "en-US",
+                "target": ["ru-RU"]
+            }
+        ]
+    }
+}
+
+const response = await fetchResults(URL, requestBody);
+
+const data = await response.json();
+
+console.log("data==> ", data);
+
+let acquired = response.status == 200 ? true : false;
+
+console.log("acquired==> ", acquired);
+return data;
+
+}
+
+
+
+export const stopRTS = async(APPID, taskId, builderToken)=> {
+
+
+  const URL = `https://api.agora.io/v1/projects/${APPID}/rtsc/speech-to-text/tasks/${taskId}?builderToken=${builderToken}`;
+
+  const requestBody = null
+
+// const response = await fetchResults(URL, requestBody, "DELETE");
+
+const options = {
+  method: "DELETE",
+  headers: {
+    Authorization: `${bearerToken}`,
+    "Content-Type": "application/json",
+  },
+};
+
+try {
+return await fetch(URL, options);
+
+
+} catch (error) {
+  console.log("There has been an error");
+  console.log(error);
+  dataToReturn = error;
+}
+
+
+
+
+
+
+
+}

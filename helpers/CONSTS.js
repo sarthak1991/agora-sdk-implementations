@@ -8,7 +8,12 @@ const CONSTANTS = {
   rtmpRegion: "ap",
   RTMPUrl: "rtmp://a.rtmp.youtube.com/live2/u9p5-f6mk-1ytk-tbpm-e24w",
   InjectUrl:"http://content.jwplatform.com/manifests/vM7nH0Kl.m3u8",
-  expiry:300
+  expiry:300,
+  vendor: 1,
+  region: 14,
+  bucket: "agoracloudrecordingdemo-NO",
+  accessKey: "AKIA6GBMGYVGU2TPYZHN",
+  secretKey: "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",
 };
 
 export default CONSTANTS;
