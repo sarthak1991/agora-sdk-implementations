@@ -12,16 +12,8 @@ import VirtualBackgroundExtension from "agora-extension-virtual-background";
 
 // Importing Generator function to Generate the UID and RTC Token
 import generate from "./helpers/generators";
-import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer, acquireRTS, startRTS, stopRTS} from "./helpers/restfulControllers"
+import {acquireRecording, startWebRecording, stopWebRecording, createRtmpConverter, deleteRtmpConverter, createCloudPlayer, deleteCloudPlayer} from "./helpers/restfulControllers"
 import CONSTANTS from "./helpers/CONSTS";
-
-
-
-import protobuf  from './compiled.js';
-
-
-
-
 
 // eac91002da8b4caabfdde1753ad8dd90
 
@@ -44,7 +36,7 @@ let dataFromMediaPull = null
  * - Enable Volume Indicators from the client (Used in checking for active speaker)
  */
 const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
-
+client.setClientRole("host")
 // const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
 // Example of geo-restricting the app.
@@ -63,7 +55,7 @@ const init_rtc = async (uid, token) => {
     // join the channel
     client.join(CONSTANTS.APPID, CONSTANTS.CHANNEL, token, uid),
     // create local tracks, using microphone and camera
-    AgoraRTC.createMicrophoneAndCameraTracks(),
+    // AgoraRTC.createMicrophoneAndCameraTracks(),
   ]);
   return [UID, localTracks];
 };
@@ -361,7 +353,7 @@ let joinStream = async (role) => {
     console.log("UID", uid);
 
     console.log("Clicked join stream");
-    client.setClientRole("host")
+client.setClientRole("audience")
     await joinAndDisplayLocalStream(uid, rtcToken);
 
     console.log("Have we reached here? ");
@@ -397,8 +389,10 @@ let handleUserJoined = async (user, mediaType) => {
                               <div class="uid-label">${user.uid}</div>
                             </div>`);
         $("#video-call").append($newPlayer);
+
         
         user.videoTrack.play(`user-${user.uid}`);
+
         console.log(`Remote user ${user.uid} video track played`);
       } else {
         console.warn(`Remote user ${user.uid} video track is not available`);
@@ -425,31 +419,13 @@ let handleUserLeft = async (user) => {
   $(`#user-container-${user.uid}`).remove();
 };
 
-const onStreamMessage = async (uid, payload) => {
-  console.info(`Received data stream message from ${uid}: `, payload);
-  try {
-      const TextMessage = protobuf.agora.audio2text.Text;
-      const textMessage = TextMessage.decode(new Uint8Array(payload));
-      console.log('textMessage_stt:', textMessage);
-      
-      // Create a string to hold all the words
-      let subtitleText = '';
-      textMessage.words.forEach(word => {
-          subtitleText += word.text + ' ';
-          console.log('Word:', word.text);
-      });
-      
-      // Update the subtitle container
-      updateSubtitles(subtitleText.trim());
-  } catch (err) {
-      console.error('Failed to decode message:', err);
-  }
-}
-
-// Function to update subtitles
-function updateSubtitles(text) {
-  const subtitleContainer = document.getElementById('subtitle-container');
-  subtitleContainer.textContent = text;
+const onStreamMessage = async(uid, stream)=> {
+  // if (uid != {pusher bot uid}) {
+    console.log("This is coming from the stream messages function that is activated when we go for transcription. -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+    console.log(uid);
+    console.log(stream);
+    console.log("This is coming from the stream messages function that is activated when we go for transcription. -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+    return;
 }
 
 let leaveAndRemoveLocalStream = async () => {
@@ -817,89 +793,6 @@ const toggleScreenShare = async () => {
 
 
 
-let rtsAcquisitionData = null;
-let rtsData = null;
-let isRTSRunning = false;
-
-const toggleRTS = async (e) => {
-    e.preventDefault();
-    const $button = $(e.target);
-
-    const disableButton = () => {
-        $button.prop('disabled', true);
-        $button.css('opacity', '0.5');
-    };
-
-    const enableButton = () => {
-        $button.prop('disabled', false);
-        $button.css('opacity', '1');
-    };
-
-    const setButtonError = (message) => {
-        $button.text(`❌ ${message}`);
-        setTimeout(() => {
-            $button.text(isRTSRunning ? "Stop RTS" : "Start RTS");
-        }, 3000);
-    };
-
-    disableButton();
-
-    if (!isRTSRunning) {
-        try {
-            let instanceid = generate.instanceID();
-            const acquireResult = await acquireRTS(instanceid);
-            rtsAcquisitionData = acquireResult;
-            let builderToken = acquireResult.tokenName;
-            let audioUID = generate.instanceID();
-            let textUID = generate.instanceID();
-            let subBotToken = await generate.rtcToken(CONSTANTS.CHANNEL, audioUID, "audience");
-            let pubBotToken = await generate.rtcToken(CONSTANTS.CHANNEL, textUID, "audience");
-
-            let dataFromRTS = await startRTS(
-                CONSTANTS.APPID,
-                builderToken,
-                CONSTANTS.CHANNEL,
-                audioUID,
-                subBotToken,
-                textUID,
-                pubBotToken,
-                CONSTANTS.accessKey,
-                CONSTANTS.secretKey,
-                CONSTANTS.bucket,
-                CONSTANTS.vendor,
-                CONSTANTS.region
-            );
-
-            rtsData = dataFromRTS;
-            rtsData.instanceID = instanceid;
-            rtsData.builderToken = acquireResult.tokenName;
-
-            $button.text("Stop RTS");
-            $button.css("background-color", "#EE4B2B");
-            isRTSRunning = true;
-        } catch (error) {
-            console.error("Error starting RTS:", error);
-            setButtonError("Error starting");
-        }
-    } else {
-        try {
-            if (rtsData) {
-                await stopRTS(CONSTANTS.APPID, rtsData.taskId, rtsData.builderToken);
-            }
-            $button.text("Start RTS");
-            $button.css("background-color", ""); // Reset to default color
-            isRTSRunning = false;
-            rtsData = null;
-            rtsAcquisitionData = null;
-        } catch (error) {
-            console.error("Error stopping RTS:", error);
-            setButtonError("Error stopping");
-        }
-    }
-
-    enableButton();
-};
-
 
 
 // Placeholder functions for layout views
@@ -917,7 +810,6 @@ $("#camera-btn").on("click", toggleCamera);
 $("#acquire-btn").on("click", toggleRecording);
 $("#mediapush-toggle-btn").on("click", toggleMediaPush);
 $("#mediapull-toggle-btn").on("click", toggleMediaPull);
-$("#rts-toggle-btn").on("click", toggleRTS);
 
 // Gonna do some refactor
 
@@ -927,25 +819,6 @@ $("#rts-toggle-btn").on("click", toggleRTS);
 $("#grid-layout-btn").on("click", setGridLayout);
 $("#active-speaker-layout-btn").on("click", setActiveSpeakerLayout);
 
-
-
-
-
-function initializeSubtitles() {
-  const videoCallContainer = document.getElementById('video-call-container');
-  const subtitleContainer = document.createElement('div');
-  subtitleContainer.id = 'subtitle-container';
-  videoCallContainer.appendChild(subtitleContainer);
-}
-
-// Call this function when your app initializes
-initializeSubtitles();
-
-
-
-
-
-
 /**
  * Step 1:
  * - Assign the user the role of host or audience based on what the user clicked.
@@ -953,11 +826,9 @@ initializeSubtitles();
  * - Next Step --> joinStream()
  */
 $("#join-as-host-btn").on("click", async () => {
-  joinStream("publisher");
+  await joinStream("publisher");
 });
-joinStream("publisher");
 
 $("#join-as-audience-btn").on("click", async () => {
-  await joinStream("audience");
 });
-
+joinStream("audience");

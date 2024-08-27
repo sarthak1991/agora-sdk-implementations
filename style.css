@@ -79,3 +79,34 @@ html, body {
   height: 100dvh;
   background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(102,121,9,1) 26%, rgba(0,212,255,1) 100%);
 }
+
+#start-record-btn{
+  display: none;
+}
+
+
+#stop-record-btn{
+  display: none;
+}
+
+#screen-share-btn {
+  display: none;
+}
+
+#subtitle-container {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 800px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px;
+  font-size: 18px;
+  z-index: 1000;
+  border-radius: 5px;
+  pointer-events: none;
+}
+

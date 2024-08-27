@@ -1,0 +1,5 @@
+
+
+aws s3 ls s3://agoracloudrecordingdemo
+aws s3 rm s3://agoracloudrecordingdemo --recursive
+aws s3 rb s3://agoracloudrecordingdemo

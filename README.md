@@ -1,3 +1,4 @@
+# This project is still WIP. Please use appropriate caution when using this as a template. Reach out to the maintainer for help. 
 
 # Agora Video Call Project
 
